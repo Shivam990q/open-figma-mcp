@@ -3,8 +3,11 @@ import cors from 'cors';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js';
+import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import path from 'path';
+import { randomUUID } from 'crypto';
 import { AsyncLocalStorage } from 'async_hooks';
 
 import {
@@ -173,7 +176,10 @@ console.error(`[Startup] Writing Universal rules to workspace: ${projectPath}`);
 writeUniversalRules(projectPath);
 console.error(`[Startup] Output format: ${format} | Network: ${proxyStatus}`);
 
-// Initialize high-level MCP server
+// Build a fresh MCP server instance with all tools registered. Using a factory
+// lets each transport/session own its server — required for the modern
+// Streamable HTTP transport (concurrent sessions) and safer for SSE too.
+function buildServer() {
 const server = new McpServer({
   name: 'open-figma-mcp',
   version: VERSION,
@@ -1170,10 +1176,24 @@ server.tool(
   }
 );
 
+  return server;
+}
+
+// Per-request token override → structured {token}/{oauthToken}. X-Figma-Token is
+// always a PAT; Authorization is always an OAuth Bearer token.
+function tokenOverrideFromHeaders(req) {
+  const xFigmaToken = req.headers['x-figma-token'];
+  const authHeader = req.headers['authorization'];
+  if (xFigmaToken) return { token: xFigmaToken };
+  if (authHeader) return { oauthToken: authHeader.replace(/^Bearer\s+/i, '') };
+  return undefined;
+}
+
 // Start the server based on the selected transport mode
 if (stdioMode) {
   // Stdio mode
   console.error('[Mode] Starting OpenFigma MCP Server in Stdio mode...');
+  const server = buildServer();
   const transport = new StdioServerTransport();
   server.connect(transport).then(() => {
     console.error('[Server] Connected via Stdio.');
@@ -1181,87 +1201,133 @@ if (stdioMode) {
     console.error('[Server] Connection error:', err);
   });
 } else {
-  // HTTP/SSE mode (Express)
-  console.error(`[Mode] Starting OpenFigma MCP Server in HTTP/SSE mode on port ${port}...`);
+  // HTTP mode (Express): modern Streamable HTTP at /mcp + legacy SSE at /sse.
+  console.error(`[Mode] Starting OpenFigma MCP Server in HTTP mode on port ${port}...`);
   const app = express();
-  app.use(cors());
-  app.use(express.json());
+  app.use(cors({ exposedHeaders: ['Mcp-Session-Id'], allowedHeaders: ['Content-Type', 'Mcp-Session-Id', 'X-Figma-Token', 'Authorization'] }));
+  app.use(express.json({ limit: '8mb' }));
 
-  // Serve downloaded assets over localhost so agents can reference real URLs
-  // (mirrors the official Figma MCP's asset endpoint). The download tools save
-  // into <imageDir>/figma-export and return /figma-export/<file> paths.
+  // Serve downloaded assets over localhost so agents can reference real URLs.
   const exportDir = path.join(resolvedImageDir, 'figma-export');
   app.use('/figma-export', express.static(exportDir));
   app.use('/assets', express.static(exportDir));
 
-  let activeTransport = null;
+  // ---------------------------------------------------------------------------
+  // Modern Streamable HTTP transport (MCP spec 2025-03-26). Single /mcp endpoint
+  // handles POST (client→server JSON-RPC) and GET (server→client SSE stream),
+  // with session continuity via the Mcp-Session-Id header. This is what current
+  // clients (Lovable, recent Cursor/Claude) expect.
+  // ---------------------------------------------------------------------------
+  const streamableTransports = {}; // sessionId -> transport
+
+  app.post('/mcp', async (req, res) => {
+    const tokenOverride = tokenOverrideFromHeaders(req);
+    await tokenStorage.run({ tokenOverride }, async () => {
+      try {
+        const sessionId = req.headers['mcp-session-id'];
+        let transport = sessionId ? streamableTransports[sessionId] : undefined;
+
+        if (!transport) {
+          if (!isInitializeRequest(req.body)) {
+            res.status(400).json({
+              jsonrpc: '2.0',
+              error: { code: -32000, message: 'Bad Request: no valid session ID. Send an initialize request first.' },
+              id: null,
+            });
+            return;
+          }
+          transport = new StreamableHTTPServerTransport({
+            sessionIdGenerator: () => randomUUID(),
+            onsessioninitialized: (sid) => {
+              streamableTransports[sid] = transport;
+              console.error(`[StreamableHTTP] Session initialized: ${sid}`);
+            },
+          });
+          transport.onclose = () => {
+            if (transport.sessionId) delete streamableTransports[transport.sessionId];
+          };
+          const s = buildServer();
+          await s.connect(transport);
+        }
+        await transport.handleRequest(req, res, req.body);
+      } catch (err) {
+        console.error('[StreamableHTTP] POST error:', err);
+        if (!res.headersSent) res.status(500).json({ jsonrpc: '2.0', error: { code: -32603, message: 'Internal error' }, id: null });
+      }
+    });
+  });
+
+  // GET (open the SSE stream) + DELETE (terminate session) for an existing session.
+  const handleStreamableSession = async (req, res) => {
+    const sessionId = req.headers['mcp-session-id'];
+    const transport = sessionId ? streamableTransports[sessionId] : undefined;
+    if (!transport) {
+      res.status(400).send('Invalid or missing Mcp-Session-Id header.');
+      return;
+    }
+    await tokenStorage.run({ tokenOverride: tokenOverrideFromHeaders(req) }, async () => {
+      await transport.handleRequest(req, res);
+    });
+  };
+  app.get('/mcp', handleStreamableSession);
+  app.delete('/mcp', handleStreamableSession);
+
+  // ---------------------------------------------------------------------------
+  // Legacy SSE transport (deprecated MCP spec, kept for older clients).
+  // ---------------------------------------------------------------------------
+  let activeSseTransport = null;
 
   app.get('/sse', async (req, res) => {
-    console.error('[HTTP/SSE] Client initiated SSE stream connection.');
-    
-    if (activeTransport) {
-      console.error('[HTTP/SSE] Closing active previous SSE connection.');
-      try {
-        await activeTransport.close();
-      } catch (e) {
-        console.error('[HTTP/SSE] Error closing transport:', e);
-      }
+    console.error('[SSE] Client initiated legacy SSE stream connection.');
+    if (activeSseTransport) {
+      try { await activeSseTransport.close(); } catch (e) { /* ignore */ }
     }
-
-    activeTransport = new SSEServerTransport('/messages', res);
-    await server.connect(activeTransport);
-
-    activeTransport.onclose = () => {
-      console.error('[HTTP/SSE] Transport connection closed.');
-      activeTransport = null;
-    };
+    activeSseTransport = new SSEServerTransport('/messages', res);
+    const server = buildServer();
+    await server.connect(activeSseTransport);
+    activeSseTransport.onclose = () => { activeSseTransport = null; };
   });
 
   app.post('/messages', async (req, res) => {
     const { sessionId } = req.query;
-    console.error(`[HTTP/SSE] Received POST message for session: ${sessionId}`);
-    
-    // Per-request token override. Normalize to the structured {token}/{oauthToken}
-    // contract so auth headers are chosen deterministically rather than via a
-    // string heuristic: X-Figma-Token is always a PAT (-> X-Figma-Token header),
-    // Authorization is always an OAuth Bearer token.
-    const xFigmaToken = req.headers['x-figma-token'];
-    const authHeader = req.headers['authorization'];
-    let tokenOverride;
-    if (xFigmaToken) {
-      tokenOverride = { token: xFigmaToken };
-    } else if (authHeader) {
-      tokenOverride = { oauthToken: authHeader.replace(/^Bearer\s+/i, '') };
-    }
-
-    tokenStorage.run({ tokenOverride }, async () => {
-      if (activeTransport && activeTransport.sessionId === sessionId) {
-        await activeTransport.handlePostMessage(req, res);
+    await tokenStorage.run({ tokenOverride: tokenOverrideFromHeaders(req) }, async () => {
+      if (activeSseTransport && activeSseTransport.sessionId === sessionId) {
+        await activeSseTransport.handlePostMessage(req, res);
       } else {
-        console.error('[HTTP/SSE] Session mismatch or no active transport connection found.');
         res.status(400).send('Session mismatch or SSE stream not connected.');
       }
     });
   });
 
+  // ---------------------------------------------------------------------------
+  // Info + health
+  // ---------------------------------------------------------------------------
   app.get('/health', (req, res) => {
     res.json({
       status: 'ok',
       name: 'open-figma-mcp',
       version: VERSION,
-      transport: 'sse',
+      transports: ['streamable-http', 'sse'],
+      endpoints: { streamableHttp: '/mcp', sse: '/sse' },
       uptime: Math.round(process.uptime()),
       hasServerToken: !!globalToken,
+      sessions: Object.keys(streamableTransports).length,
     });
   });
 
-  app.get('/mcp', (req, res) => {
-    res.send('OpenFigma MCP Server is running. Establish SSE stream at /sse.');
+  app.get('/', (req, res) => {
+    res.type('text/plain').send(
+      `OpenFigma MCP v${VERSION} is running.\n` +
+      `- Streamable HTTP (recommended): POST/GET ${req.protocol}://${req.get('host')}/mcp\n` +
+      `- Legacy SSE:                    GET ${req.protocol}://${req.get('host')}/sse\n` +
+      `- Health:                        ${req.protocol}://${req.get('host')}/health\n`
+    );
   });
 
   app.listen(port, host, () => {
     console.error(`[Server] Listening on http://${host}:${port}`);
-    console.error(`[SSE Endpoint] http://${host}:${port}/sse`);
-    console.error(`[Assets] Served at http://${host}:${port}/figma-export/ (from ${exportDir})`);
+    console.error(`[Streamable HTTP] http://${host}:${port}/mcp   (use this in modern clients / Lovable)`);
+    console.error(`[Legacy SSE]      http://${host}:${port}/sse`);
+    console.error(`[Assets]          http://${host}:${port}/figma-export/ (from ${exportDir})`);
   });
 }

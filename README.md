@@ -154,11 +154,10 @@ To use OpenFigma in Lovable, add it as a **Custom MCP** ("Connect your own local
 MCP"):
 
 1. Start OpenFigma in HTTP mode (`node src/server.js` → `:3845`), or use the desktop app's **MCP Server → Start**.
-2. In Lovable: **Resources → Connectors → Custom MCP**.
-3. Point it at the SSE URL: `http://127.0.0.1:3845/sse`.
+2. In Lovable: **Resources → Connectors → Custom MCP** → **HTTP**.
+3. Point it at the Streamable HTTP endpoint: `http://127.0.0.1:3845/mcp`.
 
-If the Custom MCP asks for a command instead of a URL, use the stdio form below
-(same as Cursor/Claude).
+> OpenFigma serves the **modern Streamable HTTP transport at `/mcp`** (what Lovable and recent Cursor/Claude expect) and the **legacy SSE transport at `/sse`** for older clients. Always prefer `/mcp`.
 
 ### Cursor / VS Code / Claude Desktop
 ```json
@@ -178,12 +177,12 @@ If the Custom MCP asks for a command instead of a URL, use the stdio form below
 {
   "mcpServers": {
     "open-figma-mcp": {
-      "url": "http://localhost:3845/sse",
-      "env": { "FIGMA_API_KEY": "figd_YOUR_TOKEN" }
+      "url": "http://localhost:3845/mcp"
     }
   }
 }
 ```
+> `/mcp` is the modern Streamable HTTP endpoint (recommended). `/sse` is still served for legacy SSE clients.
 
 ---
 

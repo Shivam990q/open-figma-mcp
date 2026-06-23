@@ -42,7 +42,7 @@ export function ServerPage() {
           <div className="flex items-center gap-2">
             <span className={`h-2.5 w-2.5 rounded-full ${server.running ? 'bg-emerald-400 shadow-glow' : 'bg-zinc-600'}`} />
             <span className="font-semibold text-white">{server.running ? 'Running' : 'Stopped'}</span>
-            {server.running && <span className="text-sm text-zinc-500">{server.host}:{server.port}/sse</span>}
+            {server.running && <span className="text-sm text-zinc-500">{server.host}:{server.port}/mcp</span>}
           </div>
 
           <div className="mt-5 grid grid-cols-2 gap-3">
@@ -105,7 +105,7 @@ export function ServerPage() {
 function buildConfig(client: string, host: string, port: string): string {
   if (client === 'Lovable (HTTP)') {
     return JSON.stringify(
-      { mcpServers: { 'open-figma-mcp': { url: `http://${host}:${port}/sse` } } },
+      { mcpServers: { 'open-figma-mcp': { url: `http://${host}:${port}/mcp` } } },
       null,
       2
     )

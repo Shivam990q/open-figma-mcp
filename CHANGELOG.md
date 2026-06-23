@@ -14,6 +14,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `DEPLOYMENT.md` covering stdio/HTTP/Docker/cloud with security guidance.
 - **CI** now also typechecks and builds the desktop app.
 
+## [Unreleased]
+
+### Added
+- **Streamable HTTP transport** (MCP spec 2025-03-26) at `/mcp` — what Lovable and
+  recent Cursor/Claude clients expect. Server refactored to a per-session factory;
+  legacy SSE remains at `/sse`. Verified end-to-end with a real `initialize` +
+  `tools/list` handshake.
+- Root `/` info page and richer `/health` (lists both transports + active sessions).
+
+### Changed
+- Lovable / HTTP client config now uses `http://localhost:3845/mcp`.
+
 ## [1.3.0]
 
 ### Added
