@@ -4,3 +4,7 @@ release/
 dist/
 *.log
 .DS_Store
+
+# Stray rules files if server ever runs with cwd=desktop
+LOVABLE.md
+.cursorrules
