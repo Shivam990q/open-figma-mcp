@@ -131,7 +131,7 @@ All options can be set via CLI flag **or** environment variable. Precedence: **C
 | `--no-telemetry` | `FRAMELINK_TELEMETRY=off` / `DO_NOT_TRACK` | — | Accepted for compatibility (OpenFigma collects **no** telemetry) |
 | `--help`, `--version` | — | — | Print help / version and exit |
 
-> **Lovable note:** the default port is `3845` so Lovable Desktop can autodetect the connector. For drop-in compatibility with `figma-developer-mcp` configs that assume `3333`, set `FRAMELINK_PORT=3333` or `--port=3333`.
+> **Lovable note:** `3845` is the port the official Figma Dev Mode MCP uses, so it's a sensible default. Add OpenFigma to Lovable via **Custom MCP** (not the built-in "Figma desktop" tile, which is reserved for the official Figma app). For drop-in compatibility with `figma-developer-mcp` configs that assume `3333`, set `FRAMELINK_PORT=3333` or `--port=3333`.
 
 ### Authentication
 
@@ -148,7 +148,17 @@ Behind a corporate proxy? Set `--proxy=http://proxy:8080` (or `FIGMA_PROXY`). Th
 ## 🤖 MCP Client Setup
 
 ### Lovable Desktop
-Start the server in HTTP mode on port `3845`; Lovable scans localhost and enables the connector automatically.
+Lovable's built-in **"Figma desktop"** connector is reserved for the *official*
+Figma desktop app's Dev Mode MCP — it can't be enabled by a third-party server.
+To use OpenFigma in Lovable, add it as a **Custom MCP** ("Connect your own local
+MCP"):
+
+1. Start OpenFigma in HTTP mode (`node src/server.js` → `:3845`), or use the desktop app's **MCP Server → Start**.
+2. In Lovable: **Resources → Connectors → Custom MCP**.
+3. Point it at the SSE URL: `http://127.0.0.1:3845/sse`.
+
+If the Custom MCP asks for a command instead of a URL, use the stdio form below
+(same as Cursor/Claude).
 
 ### Cursor / VS Code / Claude Desktop
 ```json
