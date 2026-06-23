@@ -1,0 +1,15 @@
+node_modules
+desktop
+.git
+.github
+.figma-cache
+figma-export
+tests
+*.md
+!README.md
+.env
+.env.*
+release
+out
+dist
+coverage

@@ -222,6 +222,7 @@ The unit tests run with no network and no token; the simplification tests use a 
 ## 🤝 Project & community
 
 - [Contributing guide](CONTRIBUTING.md) — dev setup, how to add a framework or token format
+- [Deployment guide](DEPLOYMENT.md) — stdio, HTTP, Docker, cloud platforms
 - [Changelog](CHANGELOG.md) — what changed, version by version
 - [Security policy](SECURITY.md) — how to report issues, and the localhost/auth notes
 - [Code of Conduct](CODE_OF_CONDUCT.md)

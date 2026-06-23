@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Radio, Compass, Palette, Code2, Settings, Github, BookOpen } from 'lucide-react'
+import { LayoutDashboard, Radio, Compass, Palette, Code2, Settings, Github, BookOpen, ShieldCheck, ImageDown } from 'lucide-react'
 import { useApp, type Route } from '../store'
 import { Logo } from './ui'
 
@@ -9,6 +9,8 @@ const NAV: { id: Route; label: string; icon: typeof Radio }[] = [
   { id: 'explore', label: 'Explore', icon: Compass },
   { id: 'tokens', label: 'Design Tokens', icon: Palette },
   { id: 'codegen', label: 'Code Gen', icon: Code2 },
+  { id: 'audit', label: 'Accessibility', icon: ShieldCheck },
+  { id: 'assets', label: 'Assets', icon: ImageDown },
   { id: 'settings', label: 'Settings', icon: Settings }
 ]
 

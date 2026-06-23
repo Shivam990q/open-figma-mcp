@@ -11,6 +11,8 @@ const api = {
   getTokens: (input: any, format?: string) => ipcRenderer.invoke('figma:tokens', input, format),
   generateCode: (input: any, framework?: string) => ipcRenderer.invoke('figma:codegen', input, framework),
   audit: (input: any, pageBackground?: string) => ipcRenderer.invoke('figma:audit', input, pageBackground),
+  downloadImages: (input: any, format?: string, imageDir?: string) =>
+    ipcRenderer.invoke('figma:download', input, format, imageDir),
 
   saveSettings: (patch: any) => ipcRenderer.invoke('settings:save', patch),
 
@@ -23,6 +25,7 @@ const api = {
   close: () => ipcRenderer.send('window:close'),
 
   openExternal: (url: string) => ipcRenderer.invoke('shell:open', url),
+  showFolder: (p: string) => ipcRenderer.invoke('shell:showFolder', p),
   copy: (text: string) => ipcRenderer.invoke('clipboard:write', text),
 
   onServerLog: (cb: (e: any) => void) => {

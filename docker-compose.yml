@@ -1,0 +1,14 @@
+services:
+  open-figma-mcp:
+    build: .
+    image: open-figma-mcp:latest
+    container_name: open-figma-mcp
+    ports:
+      - "3845:3845"
+    environment:
+      # Either set FIGMA_API_KEY here, or omit it and send X-Figma-Token per request.
+      - FIGMA_API_KEY=${FIGMA_API_KEY:-}
+      - FRAMELINK_HOST=0.0.0.0
+      - FRAMELINK_PORT=3845
+      - OUTPUT_FORMAT=${OUTPUT_FORMAT:-yaml}
+    restart: unless-stopped

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { AppSettings } from './global'
 
-export type Route = 'dashboard' | 'server' | 'explore' | 'tokens' | 'codegen' | 'settings'
+export type Route = 'dashboard' | 'server' | 'explore' | 'tokens' | 'codegen' | 'audit' | 'assets' | 'settings'
 
 interface LogLine {
   stream: 'out' | 'err'

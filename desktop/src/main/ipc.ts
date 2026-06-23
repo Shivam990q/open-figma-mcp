@@ -54,6 +54,9 @@ export function registerIpc(): void {
   ipcMain.handle('figma:tokens', (_e, input, format) => core.designTokens(tok(), input, format))
   ipcMain.handle('figma:codegen', (_e, input, framework) => core.codegen(tok(), input, framework))
   ipcMain.handle('figma:audit', (_e, input, bg) => core.audit(tok(), input, bg))
+  ipcMain.handle('figma:download', (_e, input, format, imageDir) =>
+    core.downloadImages(tok(), input, format, imageDir || app.getPath('downloads'))
+  )
 
   // ---- Settings ----
   ipcMain.handle('settings:save', (_e, patch) => {
@@ -107,6 +110,7 @@ export function registerIpc(): void {
 
   // ---- Misc ----
   ipcMain.handle('shell:open', (_e, url: string) => shell.openExternal(url))
+  ipcMain.handle('shell:showFolder', (_e, p: string) => shell.openPath(p))
   ipcMain.handle('clipboard:write', (_e, text: string) => {
     clipboard.writeText(text)
     return true

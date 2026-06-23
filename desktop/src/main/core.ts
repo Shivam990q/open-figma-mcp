@@ -11,6 +11,7 @@ import {
   fetchFigmaNodes,
   fetchFigmaVariables,
   fetchFigmaNodesGeometry,
+  downloadFigmaImages,
   whoami as figmaWhoami,
 } from '../../../src/figma.js'
 import { serialize } from '../../../src/serialize.js'
@@ -110,4 +111,18 @@ export async function audit(token: string, input: any, pageBackground?: string) 
     ? await fetchFigmaNodes(fileKey, [nodeId], asTokenObj(token))
     : await fetchFigmaFile(fileKey, asTokenObj(token))
   return auditAccessibility(raw, { pageBackground })
+}
+
+export async function downloadImages(token: string, input: any, format = 'png', imageDir: string) {
+  const { fileKey, nodeId } = resolveTarget(input)
+  const nodeIds: string[] =
+    Array.isArray(input.nodeIds) && input.nodeIds.length
+      ? input.nodeIds
+      : nodeId
+        ? [nodeId]
+        : []
+  if (!fileKey) throw new Error('A Figma URL or file key is required.')
+  if (!nodeIds.length) throw new Error('Provide a node id (in the URL) or a list of node ids to export.')
+  const results = await downloadFigmaImages(fileKey, nodeIds, asTokenObj(token), imageDir, format)
+  return { dir: `${imageDir}/figma-export`, results }
 }

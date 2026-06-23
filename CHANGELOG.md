@@ -9,7 +9,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Added
 - **Desktop app** (`desktop/`) — a cross-platform Electron + React + Tailwind GUI
   that reuses the core engine over IPC. Onboarding, MCP server control with live
-  logs + client-config snippets, visual Explore/Tokens/Codegen, and settings.
+  logs + client-config snippets, visual Explore/Tokens/Codegen/**Accessibility**/**Assets**, and settings.
+- **Docker support** — `Dockerfile`, `.dockerignore`, `docker-compose.yml`, and a
+  `DEPLOYMENT.md` covering stdio/HTTP/Docker/cloud with security guidance.
+- **CI** now also typechecks and builds the desktop app.
 
 ## [1.3.0]
 

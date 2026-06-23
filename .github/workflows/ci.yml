@@ -47,3 +47,23 @@ jobs:
         run: |
           node src/server.js --version
           node src/server.js --help
+
+  desktop:
+    name: Desktop build & typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: desktop/package-lock.json
+      - name: Install desktop deps
+        working-directory: desktop
+        run: npm ci
+      - name: Typecheck
+        working-directory: desktop
+        run: npm run typecheck
+      - name: Build (main/preload/renderer)
+        working-directory: desktop
+        run: npm run build

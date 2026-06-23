@@ -14,6 +14,11 @@ export interface OpenFigmaApi {
   getTokens(input: TargetInput, format?: string): Promise<{ tokens: any; text: string; format: string }>
   generateCode(input: TargetInput, framework?: string): Promise<{ code: string; framework: string }>
   audit(input: TargetInput, pageBackground?: string): Promise<any>
+  downloadImages(
+    input: TargetInput & { nodeIds?: string[] },
+    format?: string,
+    imageDir?: string
+  ): Promise<{ dir: string; results: { nodeId: string; fileName: string; filePath: string; localUrl: string }[] }>
   saveSettings(patch: Partial<AppSettings>): Promise<AppSettings>
   startServer(opts: { port: number; host: string }): Promise<{ running: boolean; port?: number; host?: string }>
   stopServer(): Promise<{ running: boolean }>
@@ -22,6 +27,7 @@ export interface OpenFigmaApi {
   maximize(): void
   close(): void
   openExternal(url: string): Promise<void>
+  showFolder(p: string): Promise<string>
   copy(text: string): Promise<boolean>
   onServerLog(cb: (p: { stream: 'out' | 'err'; line: string; ts: number }) => void): () => void
   onServerStatus(cb: (p: { running: boolean; port?: number; host?: string }) => void): () => void

@@ -10,6 +10,8 @@ import { ServerPage } from './pages/Server'
 import { Explore } from './pages/Explore'
 import { TokensPage } from './pages/Tokens'
 import { Codegen } from './pages/Codegen'
+import { Audit } from './pages/Audit'
+import { Assets } from './pages/Assets'
 import { SettingsPage } from './pages/Settings'
 
 const PAGES = {
@@ -18,6 +20,8 @@ const PAGES = {
   explore: Explore,
   tokens: TokensPage,
   codegen: Codegen,
+  audit: Audit,
+  assets: Assets,
   settings: SettingsPage
 }
 
