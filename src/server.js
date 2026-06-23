@@ -456,6 +456,7 @@ server.tool(
 // Register Tool: get_image_fills (imageRef -> URL map)
 server.tool(
   'get_image_fills',
+  'Get the original uploaded image URLs (image fills) keyed by imageRef. Prefer this over download_figma_images/download_assets for decorative or photographic raster images — it uses the lightweight image-fills endpoint and does NOT consume the heavily rate-limited render API quota.',
   { fileKey: z.string().describe('The Figma file key') },
   async ({ fileKey }) => {
     try {

@@ -625,9 +625,9 @@ export function localComponentScanner(workspacePath) {
 /**
  * Generic authenticated GET against the Figma REST API returning parsed JSON.
  */
-async function figmaGet(pathAndQuery, token) {
+async function figmaGet(pathAndQuery, token, retries = 3, delay = 2500) {
   const url = `https://api.figma.com${pathAndQuery}`;
-  const response = await fetchWithRetry(url, { headers: getAuthHeaders(token) });
+  const response = await fetchWithRetry(url, { headers: getAuthHeaders(token) }, retries, delay);
   if (!response.ok) {
     let errMsg = response.statusText;
     try {
@@ -687,10 +687,29 @@ export async function fetchVersions(fileKey, token) {
 /**
  * GET the imageRef -> rendered URL map for image fills in a file. This resolves
  * the `imageRef` values that appear in simplified IMAGE fills to real URLs.
+ *
+ * IMPORTANT: this is the lightweight *image fills* endpoint, NOT the render API —
+ * it returns the original uploaded image URLs and is far less rate-limited. Use
+ * this (via the get_image_fills tool) for decorative/uploaded images instead of
+ * download_figma_images when the render API is throttled. Cached + stale-safe.
  */
 export async function fetchImageFills(fileKey, token) {
-  const data = await figmaGet(`/v1/files/${fileKey}/images`, token);
-  return data.meta?.images || {};
+  const cacheKey = `imagefills_${fileKey}`;
+  const cached = getFromCache(cacheKey);
+  if (cached) return cached;
+  const stale = getFromCache(cacheKey, true);
+  try {
+    const data = await figmaGet(`/v1/files/${fileKey}/images`, token, stale ? 1 : 3, stale ? 600 : 2500);
+    const images = data.meta?.images || {};
+    saveToCache(cacheKey, images);
+    return images;
+  } catch (err) {
+    if (stale) {
+      console.error(`[Cache] image-fills error; serving cached imagefills_${fileKey}: ${err.message}`);
+      return stale;
+    }
+    throw err;
+  }
 }
 
 /**
