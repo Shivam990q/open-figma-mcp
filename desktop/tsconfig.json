@@ -6,6 +6,7 @@
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "jsx": "react-jsx",
     "strict": true,
+    "noEmit": true,
     "noUnusedLocals": false,
     "skipLibCheck": true,
     "esModuleInterop": true,

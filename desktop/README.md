@@ -35,6 +35,31 @@ npm run dist:win       # package installer (or dist:mac / dist:linux)
 
 Installers are written to `desktop/release/`.
 
+## Troubleshooting
+
+**`Error: Electron uninstall` when running `npm run dev`**
+Electron's binary download was interrupted and a corrupt/empty zip got cached, so
+electron-vite can't find the executable. Clear the cache and reinstall the binary:
+
+```bash
+# Windows (PowerShell)
+Remove-Item -Recurse -Force "$env:LOCALAPPDATA\electron\Cache"
+node node_modules/electron/install.js
+
+# macOS / Linux
+rm -rf ~/Library/Caches/electron ~/.cache/electron
+node node_modules/electron/install.js
+```
+
+Verify with `node -e "console.log(require('electron'))"` — it should print a path
+to the `electron` executable. If the download keeps failing behind a proxy, set
+`HTTPS_PROXY` (or `ELECTRON_GET_USE_PROXY=true`) before reinstalling.
+
+**TypeScript "Cannot write file … would overwrite input file"**
+Fixed via `noEmit: true` in `tsconfig.json` (the type checker shouldn't emit; the
+build is handled by electron-vite/esbuild). If your editor still shows it,
+reload the TS server.
+
 ## Architecture
 
 ```
