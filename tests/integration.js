@@ -16,6 +16,11 @@ console.log(`Server script: ${serverScript}`);
 const FIGMA_API_KEY = process.env.FIGMA_API_KEY || "figd_dummy_integration_test_token";
 const TEST_FILE_KEY = "qyzRLWGPVjGvms7UzvZ9up";
 
+// Live Figma API tests only run when a real token is supplied via the env.
+// Without one (e.g. in CI, or a fresh clone), we still exercise the offline
+// surface: server boot, tool listing, honest-refusal tools, and capabilities.
+const HAS_REAL_TOKEN = !!process.env.FIGMA_API_KEY;
+
 // Seed the cache with local figma_file_summary.json to bypass rate limits during test runs
 const cacheDir = path.join(projectRoot, '.figma-cache');
 const localSummaryPath = 'C:\\Users\\Rose\\Videos\\FUTURE\\Autonomy Social Media\\backend\\figma_file_summary.json';
@@ -149,6 +154,7 @@ async function runTests() {
     }
 
     // 3. Call get_figma_data
+    if (HAS_REAL_TOKEN) {
     await sleep(2000);
     console.log('\n--- Test 3: Call get_figma_data ---');
     const getFigmaDataResponse = await sendRequest('tools/call', {
@@ -351,6 +357,10 @@ async function runTests() {
     }
     console.log('get_figjam success:', figjamContent);
 
+    } else {
+      console.warn('\n⚠️  Skipping live Figma API tests (Tests 3-14): set FIGMA_API_KEY to run them.');
+    }
+
     // 15-19. Canvas-write tools must HONESTLY refuse (supported:false, isError:true)
     console.log('\n--- Tests 15-19: Honest refusal of canvas-write tools ---');
     for (const [name, args] of [
@@ -377,6 +387,7 @@ async function runTests() {
     console.log('  capabilities: OK');
 
     // 19c. New derived tools over the warm cache: tokens, codegen, a11y
+    if (HAS_REAL_TOKEN) {
     const tokResp = await sendRequest('tools/call', { name: 'get_design_tokens', arguments: { fileKey: TEST_FILE_KEY, format: 'css' } });
     const tokTxt = tokResp.result?.content?.[0]?.text || '';
     if (tokResp.result?.isError || !tokTxt.includes(':root')) throw new Error(`get_design_tokens failed: ${tokTxt.slice(0, 120)}`);
@@ -391,6 +402,7 @@ async function runTests() {
     const a11yTxt = a11yResp.result?.content?.[0]?.text || '';
     if (a11yResp.result?.isError || !a11yTxt.includes('textLayersChecked')) throw new Error(`audit_accessibility failed: ${a11yTxt.slice(0, 120)}`);
     console.log('  audit_accessibility: OK');
+    }
 
     // 20. Code Connect tool chain test
     await sleep(2000);
