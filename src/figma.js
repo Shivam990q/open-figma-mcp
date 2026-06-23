@@ -230,9 +230,11 @@ export async function downloadFigmaImages(fileKey, nodeIds, token, imageDir, for
   const url = `https://api.figma.com/v1/images/${fileKey}?ids=${encodeURIComponent(idsQuery)}&format=${format}`;
   
   console.error(`[Figma API] Requesting image URLs: ${url}`);
+  // Fail fast (2 short attempts): rendering can't be served from cache, so a long
+  // backoff just causes client-side tool timeouts. Surface a clear error instead.
   const response = await fetchWithRetry(url, {
     headers: getAuthHeaders(token)
-  });
+  }, 2, 1500);
 
   if (!response.ok) {
     let errMsg = response.statusText;
@@ -240,6 +242,12 @@ export async function downloadFigmaImages(fileKey, nodeIds, token, imageDir, for
       const errJson = await response.json();
       if (errJson.err) errMsg = errJson.err;
     } catch (e) {}
+    if (response.status === 429) {
+      throw new Error(`Figma image render is rate-limited (429). Free-tier render quota is limited — wait a bit and retry, or export the asset manually from Figma.`);
+    }
+    if (response.status === 403 || response.status === 404) {
+      throw new Error(`Figma API ${response.status} rendering images: ${errMsg}. The token may not have access to this file, or the node IDs are invalid.`);
+    }
     throw new Error(`Figma API returned ${response.status} when requesting image URLs: ${errMsg}`);
   }
 
@@ -250,6 +258,7 @@ export async function downloadFigmaImages(fileKey, nodeIds, token, imageDir, for
 
   const imageUrls = result.images || {};
   const downloadResults = [];
+  const skipped = [];
 
   // Create folder figma-export inside target imageDir
   const exportDir = path.join(imageDir, 'figma-export');
@@ -260,7 +269,8 @@ export async function downloadFigmaImages(fileKey, nodeIds, token, imageDir, for
   // Download each image
   for (const [nodeId, imageUrl] of Object.entries(imageUrls)) {
     if (!imageUrl) {
-      console.error(`[Figma API] No render URL returned for node ${nodeId}`);
+      console.error(`[Figma API] No render URL returned for node ${nodeId} (often: frame exceeds Figma's max render size, or is empty/hidden).`);
+      skipped.push(nodeId);
       continue;
     }
 
@@ -288,7 +298,17 @@ export async function downloadFigmaImages(fileKey, nodeIds, token, imageDir, for
       });
     } catch (err) {
       console.error(`[Figma API] Failed downloading node ${nodeId}:`, err);
+      skipped.push(nodeId);
     }
+  }
+
+  // Don't report a misleading "success" when nothing was actually rendered.
+  if (downloadResults.length === 0) {
+    throw new Error(
+      `Figma rendered no images for [${nodeIds.join(', ')}]. ` +
+      `Likely the node(s) exceed Figma's max render size (~4096px per side — these frames are very tall), are empty/hidden, or were rate-limited. ` +
+      `Try a smaller child node, or export the frame manually from Figma (right-click → Export).`
+    );
   }
 
   return downloadResults;
@@ -391,7 +411,7 @@ export async function getScreenshot(fileKey, nodeId, token, imageDir, scale = 1)
   console.error(`[Figma API] Requesting screenshot URL: ${url}`);
   const response = await fetchWithRetry(url, {
     headers: getAuthHeaders(token)
-  });
+  }, 2, 1500);
 
   if (!response.ok) {
     let errMsg = response.statusText;
@@ -399,13 +419,22 @@ export async function getScreenshot(fileKey, nodeId, token, imageDir, scale = 1)
       const errJson = await response.json();
       if (errJson.err) errMsg = errJson.err;
     } catch (e) {}
+    if (response.status === 429) {
+      throw new Error(`Figma image render is rate-limited (429). Wait a bit and retry, or export manually from Figma.`);
+    }
     throw new Error(`Figma API returned ${response.status} when requesting screenshot: ${errMsg}`);
   }
 
   const result = await response.json();
+  if (result.err) {
+    throw new Error(`Figma rendering error: ${result.err}`);
+  }
   const imageUrl = result.images?.[nodeId];
   if (!imageUrl) {
-    throw new Error(`Figma rendering error: No screenshot render URL returned for node ${nodeId}`);
+    throw new Error(
+      `Figma returned no screenshot for node ${nodeId}. This usually means the frame exceeds Figma's max render size ` +
+      `(~4096px per side — large/tall frames fail). Try a lower scale, a smaller child node, or export it manually from Figma.`
+    );
   }
 
   // Create folder figma-export inside target imageDir
