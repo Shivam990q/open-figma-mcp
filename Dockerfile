@@ -24,7 +24,7 @@ EXPOSE 3845
 
 # Healthcheck hits the lightweight /mcp info endpoint.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD wget -qO- http://127.0.0.1:3845/mcp || exit 1
+  CMD wget -qO- http://127.0.0.1:3845/health || exit 1
 
 # Drop privileges (node user ships with the official image).
 USER node

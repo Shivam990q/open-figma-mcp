@@ -1244,6 +1244,17 @@ if (stdioMode) {
     });
   });
 
+  app.get('/health', (req, res) => {
+    res.json({
+      status: 'ok',
+      name: 'open-figma-mcp',
+      version: VERSION,
+      transport: 'sse',
+      uptime: Math.round(process.uptime()),
+      hasServerToken: !!globalToken,
+    });
+  });
+
   app.get('/mcp', (req, res) => {
     res.send('OpenFigma MCP Server is running. Establish SSE stream at /sse.');
   });
