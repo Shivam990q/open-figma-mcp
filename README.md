@@ -52,6 +52,14 @@ OpenFigma is the only free Figma MCP that does **all** of these — several of w
 
 ## 🛠️ Installation & Usage
 
+### 🖥️ Desktop app (no terminal required)
+
+Prefer a UI? OpenFigma ships a stunning cross-platform desktop app (Electron + React) that runs the server, explores designs, extracts tokens, and generates code — all visually. See [`desktop/`](desktop/README.md).
+
+```bash
+cd desktop && npm install && npm run dev     # or build an installer: npm run dist
+```
+
 ### One-command (npx)
 ```bash
 npx open-figma-mcp --figma-api-key figd_YOUR_TOKEN --stdio

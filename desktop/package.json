@@ -1,0 +1,51 @@
+{
+  "name": "open-figma-mcp-desktop",
+  "version": "1.3.0",
+  "description": "Stunning desktop UI for OpenFigma MCP — run the server, explore designs, extract tokens, and generate code without touching a terminal.",
+  "main": "./out/main/index.js",
+  "author": "Shivam (@Shivam990q)",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "start": "electron-vite preview",
+    "build": "electron-vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "dist": "electron-vite build && electron-builder",
+    "dist:win": "electron-vite build && electron-builder --win",
+    "dist:mac": "electron-vite build && electron-builder --mac",
+    "dist:linux": "electron-vite build && electron-builder --linux"
+  },
+  "dependencies": {
+    "electron-store": "^8.2.0",
+    "framer-motion": "^11.3.19",
+    "lucide-react": "^0.417.0",
+    "zustand": "^4.5.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.12",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "autoprefixer": "^10.4.19",
+    "electron": "^31.3.0",
+    "electron-builder": "^24.13.3",
+    "electron-vite": "^2.3.0",
+    "postcss": "^8.4.40",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwindcss": "^3.4.7",
+    "typescript": "^5.5.4",
+    "vite": "^5.3.5"
+  },
+  "build": {
+    "appId": "com.openfigma.mcp.desktop",
+    "productName": "OpenFigma MCP",
+    "directories": { "output": "release" },
+    "files": ["out/**/*"],
+    "extraResources": [{ "from": "../src", "to": "core/src" }],
+    "win": { "target": "nsis" },
+    "mac": { "target": "dmg", "category": "public.app-category.developer-tools" },
+    "linux": { "target": ["AppImage", "deb"], "category": "Development" }
+  }
+}
