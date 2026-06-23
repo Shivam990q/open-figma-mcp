@@ -69,9 +69,17 @@ export function registerIpc(): void {
     if (serverProc) return { running: true, ...serverInfo }
     const entry = join(coreRoot(), 'server.js')
     const args = [entry, '--figma-api-key', tok(), '--port', String(opts.port), '--host', opts.host]
-    serverProc = spawn(process.execPath, args, {
-      env: { ...process.env, ELECTRON_RUN_AS_NODE: '1', SKIP_IMAGE_DOWNLOADS: String(store.getSettings().skipImageDownloads) }
-    })
+    const settings = store.getSettings()
+    // Run the server in a stable, writable working dir so .figma-cache and
+    // figma-export are consistent: the repo root in dev, userData when packaged.
+    const cwd = app.isPackaged ? app.getPath('userData') : join(coreRoot(), '..')
+    const env: Record<string, string> = {
+      ...(process.env as Record<string, string>),
+      ELECTRON_RUN_AS_NODE: '1',
+      SKIP_IMAGE_DOWNLOADS: String(settings.skipImageDownloads)
+    }
+    if (settings.imageDir) env.IMAGE_DIR = settings.imageDir
+    serverProc = spawn(process.execPath, args, { cwd, env })
     serverInfo = { port: opts.port, host: opts.host }
     broadcast('server:status', { running: true, ...serverInfo })
 
