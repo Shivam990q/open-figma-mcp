@@ -5,15 +5,6 @@ All notable changes to this project are documented here. The format is based on
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-
-### Added
-- **Desktop app** (`desktop/`) — a cross-platform Electron + React + Tailwind GUI
-  that reuses the core engine over IPC. Onboarding, MCP server control with live
-  logs + client-config snippets, visual Explore/Tokens/Codegen/**Accessibility**/**Assets**, and settings.
-- **Docker support** — `Dockerfile`, `.dockerignore`, `docker-compose.yml`, and a
-  `DEPLOYMENT.md` covering stdio/HTTP/Docker/cloud with security guidance.
-- **CI** now also typechecks and builds the desktop app.
-
 ## [Unreleased]
 
 ### Added
@@ -22,6 +13,21 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   legacy SSE remains at `/sse`. Verified end-to-end with a real `initialize` +
   `tools/list` handshake.
 - Root `/` info page and richer `/health` (lists both transports + active sessions).
+- **Desktop app** (`desktop/`) — a cross-platform Electron + React + Tailwind GUI
+  that reuses the core engine over IPC. Onboarding, MCP server control with live
+  logs + client-config snippets, visual Explore/Tokens/Codegen/**Accessibility**/**Assets**, and settings.
+- **Docker support** — `Dockerfile`, `.dockerignore`, `docker-compose.yml`, and a
+  `DEPLOYMENT.md` covering stdio/HTTP/Docker/cloud with security guidance.
+- **CI** now also typechecks and builds the desktop app.
+
+### Fixed
+- **Rate-limit UX**: on a 429/error, the server now serves a cached copy
+  *immediately* (one short attempt) instead of waiting through ~17s of backoff —
+  which previously caused client-side tool timeouts (e.g. in Lovable). Verified:
+  cached `get_figma_data` returns in ~0.1s instead of ~17s.
+- Cache TTL raised from 5 to **30 minutes** to cut API calls during long builds.
+- `fetchWithRetry` no longer makes a redundant extra request after exhausting retries.
+- Desktop: spawned server runs in a stable working dir (consistent `.figma-cache`/exports).
 
 ### Changed
 - Lovable / HTTP client config now uses `http://localhost:3845/mcp`.

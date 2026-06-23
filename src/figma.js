@@ -3,7 +3,7 @@ import path from 'path';
 import { simplifyDesign } from './simplify.js';
 
 const CACHE_DIR = path.join(process.cwd(), '.figma-cache');
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes cache TTL
+const CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes — designs rarely change mid-build, and free-tier PATs are heavily rate-limited.
 
 function getFromCache(cacheKey, ignoreTtl = false) {
   try {
@@ -59,15 +59,19 @@ export function getAuthHeaders(token) {
 }
 
 /**
- * Resilient fetch client that automatically handles rate limits (429) with exponential backoff retries.
+ * Resilient fetch client that handles rate limits (429) with exponential
+ * backoff. `retries`/`delay` are tuned down by callers when a cached copy
+ * already exists, so we serve cache fast instead of making the client wait.
  */
 async function fetchWithRetry(url, options = {}, retries = 3, delay = 2500) {
+  let lastResponse;
   for (let i = 0; i < retries; i++) {
     try {
       const response = await fetch(url, options);
-      if (response.status === 429) {
+      lastResponse = response;
+      if (response.status === 429 && i < retries - 1) {
         console.error(`[Figma API] Rate limited (429). Retrying in ${delay}ms... (Attempt ${i + 1}/${retries})`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
         delay *= 2; // exponential backoff
         continue;
       }
@@ -75,10 +79,11 @@ async function fetchWithRetry(url, options = {}, retries = 3, delay = 2500) {
     } catch (err) {
       if (i === retries - 1) throw err;
       console.error(`[Figma API] Request failed: ${err.message}. Retrying in ${delay}ms...`);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      delay *= 2;
     }
   }
-  return fetch(url, options);
+  return lastResponse;
 }
 
 /**
@@ -91,19 +96,18 @@ export async function fetchFigmaFile(fileKey, token, opts = {}) {
   const cached = getFromCache(cacheKey);
   if (cached) return cached;
 
+  // If a stale copy exists, fail fast (one short attempt) and serve it on ANY
+  // error — far better UX than making the client wait through 429 backoff.
+  const stale = getFromCache(cacheKey, true);
+
   try {
     const url = `https://api.figma.com/v1/files/${fileKey}${version ? `?version=${encodeURIComponent(version)}` : ''}`;
-    const response = await fetchWithRetry(url, {
-      headers: getAuthHeaders(token)
-    });
+    const response = await fetchWithRetry(url, { headers: getAuthHeaders(token) }, stale ? 1 : 3, stale ? 600 : 2500);
 
     if (!response.ok) {
-      if (response.status === 429) {
-        const expiredCached = getFromCache(cacheKey, true);
-        if (expiredCached) {
-          console.error(`[Cache] Rate limited. Falling back to expired cache for ${cacheKey}`);
-          return expiredCached;
-        }
+      if (stale) {
+        console.error(`[Cache] API ${response.status}; serving cached ${cacheKey} immediately.`);
+        return stale;
       }
       let errMsg = response.statusText;
       try {
@@ -117,10 +121,9 @@ export async function fetchFigmaFile(fileKey, token, opts = {}) {
     saveToCache(cacheKey, data);
     return data;
   } catch (err) {
-    const expiredCached = getFromCache(cacheKey, true);
-    if (expiredCached) {
-      console.error(`[Cache] Network/API error. Falling back to expired cache for ${cacheKey}: ${err.message}`);
-      return expiredCached;
+    if (stale) {
+      console.error(`[Cache] Network/API error; serving cached ${cacheKey}: ${err.message}`);
+      return stale;
     }
     throw err;
   }
@@ -190,17 +193,13 @@ export async function fetchFigmaNodes(fileKey, nodeIds, token) {
 
   try {
     const url = `https://api.figma.com/v1/files/${fileKey}/nodes?ids=${encodeURIComponent(idsQuery)}`;
-    const response = await fetchWithRetry(url, {
-      headers: getAuthHeaders(token)
-    });
+    const stale = getFromCache(cacheKey, true);
+    const response = await fetchWithRetry(url, { headers: getAuthHeaders(token) }, stale ? 1 : 3, stale ? 600 : 2500);
 
     if (!response.ok) {
-      if (response.status === 429) {
-        const expiredCached = getFromCache(cacheKey, true);
-        if (expiredCached) {
-          console.error(`[Cache] Rate limited. Falling back to expired cache for ${cacheKey}`);
-          return expiredCached;
-        }
+      if (stale) {
+        console.error(`[Cache] API ${response.status}; serving cached ${cacheKey} immediately.`);
+        return stale;
       }
       let errMsg = response.statusText;
       try {
@@ -306,9 +305,11 @@ export async function fetchFigmaVariables(fileKey, token) {
   const url = `https://api.figma.com/v1/files/${fileKey}/variables/local`;
   console.error(`[Figma API] Requesting local variables: ${url}`);
   try {
+    // Variables API is Enterprise-only; on free tiers it 403/404s and we fall
+    // back to document styles. Don't waste backoff time here — try once.
     const response = await fetchWithRetry(url, {
       headers: getAuthHeaders(token)
-    });
+    }, 1, 600);
 
     if (!response.ok) {
       if (response.status === 429) {
