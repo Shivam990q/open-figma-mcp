@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Secrets & local env
+.env
+.env.*
+!.env.example
+
+# Figma server runtime artifacts
+.figma-cache/
+figma-export/
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+
+# Build output
+dist/
+build/
+coverage/

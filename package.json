@@ -1,0 +1,67 @@
+{
+  "name": "open-figma-mcp",
+  "version": "1.3.0",
+  "description": "Universal Figma MCP server — pulls simplified design data, design tokens (8 formats), and multi-framework code (React/Vue/Svelte/Angular/HTML/Flutter/SwiftUI) into AI coding agents without a paid Figma Dev Mode seat. Free PAT, no telemetry.",
+  "main": "src/server.js",
+  "type": "module",
+  "bin": {
+    "open-figma-mcp": "./bin/cli.js"
+  },
+  "files": [
+    "src/",
+    "bin/",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node tests/unit.test.js && node tests/integration.js",
+    "test:unit": "node tests/unit.test.js",
+    "test:integration": "node tests/integration.js"
+  },
+  "keywords": [
+    "figma",
+    "mcp",
+    "model-context-protocol",
+    "figma-api",
+    "design-to-code",
+    "design-tokens",
+    "ai",
+    "cursor",
+    "claude",
+    "lovable",
+    "codegen",
+    "react",
+    "vue",
+    "svelte",
+    "angular",
+    "flutter",
+    "swiftui",
+    "tailwind",
+    "accessibility",
+    "wcag",
+    "design-system"
+  ],
+  "author": "Shivam (@Shivam990q)",
+  "license": "MIT",
+  "homepage": "https://github.com/Shivam990q/open-figma-mcp#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shivam990q/open-figma-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Shivam990q/open-figma-mcp/issues"
+  },
+  "funding": "https://github.com/sponsors/Shivam990q",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.1",
+    "express": "^4.19.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "zod": "^3.23.8"
+  }
+}

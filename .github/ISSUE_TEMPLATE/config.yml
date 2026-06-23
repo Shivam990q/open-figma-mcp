@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 Questions & Discussions
+    url: https://github.com/Shivam990q/open-figma-mcp/discussions
+    about: Ask how-to questions, share setups, and discuss ideas here.
+  - name: 🔐 Report a security vulnerability
+    url: https://github.com/Shivam990q/open-figma-mcp/security/advisories/new
+    about: Privately report a security issue (never use a public issue).

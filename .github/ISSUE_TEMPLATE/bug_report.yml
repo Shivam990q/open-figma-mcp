@@ -1,0 +1,58 @@
+name: 🐛 Bug report
+description: Report something that isn't working as expected
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug! Please fill out the sections below so we can reproduce it quickly.
+        **Do not paste your Figma token anywhere in this issue.**
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the bug and what you expected instead.
+      placeholder: "When I run `codegen` with --framework=vue, the output ..."
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Exact commands or MCP tool calls. Redact file keys/tokens.
+      placeholder: |
+        1. node src/server.js fetch "<url>" --format=json
+        2. ...
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: How are you running OpenFigma?
+      options:
+        - stdio (Cursor / Claude / VS Code)
+        - HTTP/SSE (Lovable / other)
+        - CLI subcommand (fetch/tokens/codegen/audit)
+    validations:
+      required: true
+  - type: input
+    id: node-version
+    attributes:
+      label: Node.js version
+      placeholder: "v20.11.0 (node -v)"
+    validations:
+      required: true
+  - type: input
+    id: os
+    attributes:
+      label: Operating system
+      placeholder: "Windows 11 / macOS 14 / Ubuntu 24.04"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs / error output
+      description: Paste any console output. This is automatically formatted as code.
+      render: shell
