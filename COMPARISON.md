@@ -17,7 +17,7 @@ first-party server can do (write to the canvas).
 | **Code Connect** | ✅ `get_code_connect_map` | ✅ full Code Connect toolchain | Parity |
 | **Design-system rules file** | ✅ `create_design_system_rules` | ✅ `create_design_system_rules` (from real tokens) | Parity (built from extracted tokens) |
 | **Make resources** | ✅ | ~ `get_dev_resources` | Partial |
-| **Write to canvas** (create/edit frames, components, variables) | ✅ (Plugin/Make API) | ❌ **honestly unsupported** | Impossible over REST — we never fake it |
+| **Write to canvas** (create/edit frames, components, variables) | ✅ (Plugin/Make API) | ✅ **via free companion plugin** (Plugin API + WS bridge) | Real writes — honest `supported:false` only when the plugin isn't open |
 | **Token/context efficiency** | Heavy (one screen ~350k tokens reported) | **3–4× smaller** via simplify + globalVars dedup | Our biggest practical win |
 | **Transport** | Remote (hosted) + local; Streamable HTTP | **Streamable HTTP (`/mcp`) + legacy SSE (`/sse`) + stdio** | Parity + legacy support |
 | **Multi-framework codegen** | React-focused | React-TW/inline, Vue, Svelte, Angular, HTML, Flutter, SwiftUI | We cover more |
@@ -29,15 +29,21 @@ first-party server can do (write to the canvas).
 | **Desktop control app** | ❌ (enabled in prefs) | ✅ Electron app (Home/Playground/Settings) | Unique |
 | **Telemetry** | Collected | **None** | Privacy win |
 
-## The one true gap: canvas write
+## Canvas write — now supported via the companion plugin
 
-The official server can **create and modify native Figma content** (frames,
-components, variables, auto-layout) using the Plugin/Make API. **This is
-impossible over the public REST API** that OpenFigma uses. We do not fake it —
-the write tools (`use_figma`, `create_new_file`, `generate_figma_design`,
-`generate_diagram`, `upload_assets`) return a structured `supported:false` with
-the real alternative. For the *design-to-code* direction (the overwhelmingly
-common use case), OpenFigma is a complete replacement.
+The official server creates and modifies native Figma content (frames,
+components, variables, auto-layout) using the Plugin/Make API. The public REST
+API alone can't do this — so OpenFigma ships a **free companion Figma plugin**
+that runs inside Figma (full Plugin API access) and connects to the MCP server
+over a local WebSocket bridge. With it open, agents can `create_frame`,
+`create_text`, `create_rectangle`, `set_fill_color`, `move/resize/clone/delete`
+nodes, and read the live selection — real writes, same mechanism the official
+server uses internally.
+
+When the plugin **isn't** connected, those tools return a structured
+`supported:false` (never fabricated success). File-level operations
+(`create_new_file`, HTML→canvas, Mermaid→FigJam, raw asset upload) remain out of
+scope and are honestly reported as such.
 
 ## Where OpenFigma should win adoption
 
@@ -52,5 +58,7 @@ common use case), OpenFigma is a complete replacement.
 
 For **reading designs and turning them into code, tokens, and assets**,
 OpenFigma matches or exceeds the official server and is free. For **writing back
-to the Figma canvas**, the official (paid, Plugin-based) server remains the only
-option — and OpenFigma says so plainly.
+to the Figma canvas**, OpenFigma now does real writes through its free companion
+plugin — closing the last gap. The only things it deliberately doesn't do are
+creating whole new files and HTML/Mermaid→canvas conversion, which it reports
+honestly rather than faking.

@@ -31,6 +31,7 @@ OpenFigma is the only free Figma MCP that does **all** of these — several of w
 | **Design-vs-code drift detection** | ✅ | ❌ | ❌ | ❌ |
 | **Typed component-API generation** | ✅ | ❌ | ❌ | ~ |
 | **Inline-SVG icon extraction** | ✅ | ❌ | ❌ | ❌ |
+| **Canvas write** (create/edit frames, text, fills) | ✅ (via free plugin) | ❌ | ❌ | ✅ (paid) |
 | **Prompt-injection hardening** | ✅ | ❌ (open CVE) | ❌ | ❌ |
 | Comments / versions / image-fills / dev-resources | ✅ | ❌ | ✅ | ~ |
 | Localhost asset serving | ✅ | ❌ | ❌ | ✅ |
@@ -48,7 +49,8 @@ OpenFigma is the only free Figma MCP that does **all** of these — several of w
 6. **CLI** — `fetch`, `tokens`, `codegen`, `audit` subcommands print straight to stdout.
 7. **Auto-routing assets + rules writer** — downloads images into the right `figma-export/` folder and keeps `LOVABLE.md` / `.cursorrules` current; serves assets over localhost in HTTP mode.
 8. **Dual transport + multi-tenant** — HTTP/SSE (Lovable, default port **3845**) or stdio; per-request `X-Figma-Token` header for shared deployments.
-9. **Honesty layer** — canvas-write tools (which need the Plugin API, impossible over REST) return a structured `supported:false` instead of fabricating success. A `capabilities` tool reports exactly what will work.
+9. **Honesty layer** — when the Figma plugin isn't connected, canvas-write tools return a structured `supported:false` instead of fabricating success. A `capabilities` tool reports exactly what will work (including live plugin status).
+10. **Real canvas writes** — a free companion **Figma plugin** + WebSocket bridge lets agents create/edit frames, text, rectangles, fills, and more — the one thing the REST API alone can't do. See [`figma-plugin/`](figma-plugin/README.md).
 
 ---
 
@@ -213,9 +215,14 @@ MCP"):
 - `download_figma_images` / `download_assets` / `get_screenshot` (disabled by `--skip-image-downloads`).
 
 **Meta**
-- `capabilities` — what this server can and cannot really do.
+- `capabilities` — what this server can and cannot really do (including live Figma-plugin status).
 - Code Connect toolchain (`get_code_connect_map`, `get_code_connect_suggestions`, …).
-- Canvas-write tools (`use_figma`, `create_new_file`, `generate_figma_design`, `generate_diagram`, `upload_assets`) **honestly return `supported:false`** — REST cannot write to the canvas; use `generate_code` + `download_assets` instead.
+
+**Canvas read/write** (live when the [OpenFigma Figma plugin](figma-plugin/README.md) is connected)
+- `get_canvas_selection`, `get_canvas_document` — read live selection / document.
+- `create_frame`, `create_rectangle`, `create_text` — add nodes to the canvas.
+- `set_fill_color`, `set_corner_radius`, `set_text`, `move_node`, `resize_node`, `clone_node`, `delete_node` — edit nodes.
+- When the plugin isn't connected these return an honest `supported:false`. File-level ops (`create_new_file`, `generate_figma_design`, `generate_diagram`, `upload_assets`) remain out of scope.
 
 ---
 

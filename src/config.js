@@ -142,6 +142,8 @@ SERVER
   --stdio                     Run over stdio (for Cursor, Claude Desktop, VS Code, ...)
   --port <n>                  HTTP port (or FRAMELINK_PORT / PORT). Default ${DEFAULT_PORT} (Lovable autodetect)
   --host <addr>               HTTP host (or FRAMELINK_HOST / HOST). Default ${DEFAULT_HOST}
+  --bridge-port <n>           WebSocket bridge port for the Figma plugin / canvas writes (or BRIDGE_PORT). Default ${DEFAULT_BRIDGE_PORT}
+  --no-bridge                 Don't start the Figma-plugin WebSocket bridge (or NO_BRIDGE=true)
 
 OUTPUT
   --format <yaml|json|tree>   Output format (or OUTPUT_FORMAT). Default yaml

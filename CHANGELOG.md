@@ -8,6 +8,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Real canvas writes** 🎉 — a free companion **Figma plugin** (`figma-plugin/`)
+  + WebSocket bridge gives agents live canvas read/write: `create_frame`,
+  `create_rectangle`, `create_text`, `set_fill_color`, `set_corner_radius`,
+  `set_text`, `move_node`, `resize_node`, `clone_node`, `delete_node`,
+  `get_canvas_selection`, `get_canvas_document`. Closes the last parity gap with
+  the official Figma MCP. Honest `supported:false` when the plugin isn't open.
+  New flags: `--bridge-port` / `--no-bridge`. Verified end-to-end over `/mcp`.
 - **`create_design_system_rules` tool** — generates a rules file from the design's
   real extracted tokens (colors, type ramp, spacing, radii, shadows), matching the
   official Figma MCP tool. Optionally writes `figma-design-rules.md` to the workspace.
