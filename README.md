@@ -36,6 +36,8 @@ OpenFigma is the only free Figma MCP that does **all** of these — several of w
 | Localhost asset serving | ✅ | ❌ | ❌ | ✅ |
 | **Honest about what it can't do** (no fake "success") | ✅ | — | — | — |
 
+> 📊 See **[COMPARISON.md](COMPARISON.md)** for a full, honest feature-by-feature breakdown vs. the **official Figma Dev Mode MCP** — including the one thing only Figma's first-party server can do (write to the canvas).
+
 ## 🚀 Core features
 
 1. **Free-account friendly** — PAT or OAuth Bearer token; no paid Dev Mode seat.
@@ -198,6 +200,7 @@ MCP"):
 - `get_design_tokens` — extract a token system, export as `css`/`scss`/`tailwind`/`tailwind4`/`js`/`ts`/`json` (W3C)/`style-dictionary`.
 - `generate_code` — component code in `react-tailwind`, `react-inline`, `vue`, `svelte`, `angular`, `html`, `flutter`, or `swiftui` (responsive via constraints). Also available as **`get_code`** (official Figma MCP tool-name alias).
 - `generate_component_api` — typed TS `interface` / Vue `defineProps` from component properties & variants.
+- `create_design_system_rules` — generate a rules file from the design's **real tokens** so generated code matches the design system (parity with the official Figma MCP tool).
 - `extract_vectors` — real **inline SVG** icons from path geometry (themeable `currentColor`).
 
 **Quality & review**

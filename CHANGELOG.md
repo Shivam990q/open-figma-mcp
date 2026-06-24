@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **`create_design_system_rules` tool** — generates a rules file from the design's
+  real extracted tokens (colors, type ramp, spacing, radii, shadows), matching the
+  official Figma MCP tool. Optionally writes `figma-design-rules.md` to the workspace.
+- **`COMPARISON.md`** — honest, sourced feature-by-feature comparison vs. the official Figma Dev Mode MCP.
 - **`get_code` and `get_image` tool aliases** — match the official Figma Dev Mode
   MCP tool names for closer drop-in compatibility in editors.
 - **Streamable HTTP transport** (MCP spec 2025-03-26) at `/mcp` — what Lovable and
