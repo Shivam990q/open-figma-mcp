@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: Inter, -apple-system, system-ui, sans-serif;
+        background: #0b0b0e;
+        color: #ececee;
+        padding: 16px;
+        font-size: 12px;
+      }
+      .brand { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+      .logo { width: 24px; height: 24px; border-radius: 7px; background: #7c5cff; display: grid; place-items: center; font-weight: 700; color: #fff; }
+      .title { font-weight: 600; }
+      .row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+      label { color: #9a9aa3; }
+      input {
+        flex: 1; background: #131317; border: 1px solid rgba(255,255,255,0.1);
+        color: #ececee; border-radius: 8px; padding: 7px 9px; font-size: 12px; outline: none;
+      }
+      input:focus { border-color: #7c5cff; }
+      button {
+        background: #7c5cff; color: #fff; border: 0; border-radius: 8px;
+        padding: 7px 12px; font-weight: 600; font-size: 12px; cursor: pointer;
+      }
+      button.secondary { background: #1a1a20; border: 1px solid rgba(255,255,255,0.1); color: #ececee; }
+      .status { display: flex; align-items: center; gap: 8px; margin-top: 6px; padding: 9px 11px; border-radius: 8px; background: #131317; border: 1px solid rgba(255,255,255,0.08); }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: #65656e; }
+      .dot.on { background: #3fb950; }
+      .dot.err { background: #f85149; }
+      .muted { color: #65656e; margin-top: 10px; line-height: 1.5; }
+      .count { margin-left: auto; color: #65656e; }
+    </style>
+  </head>
+  <body>
+    <div class="brand">
+      <div class="logo">F</div>
+      <div class="title">OpenFigma Bridge</div>
+    </div>
+
+    <div class="row">
+      <label>ws://127.0.0.1:</label>
+      <input id="port" value="3846" style="max-width: 90px" />
+      <button id="connectBtn">Connect</button>
+    </div>
+
+    <div class="status">
+      <span id="dot" class="dot"></span>
+      <span id="statusText">Disconnected</span>
+      <span id="count" class="count">0 cmds</span>
+    </div>
+
+    <div class="muted">
+      Keep this open while your AI agent works. It links Figma to the OpenFigma
+      MCP server so the agent can read and edit this file.
+    </div>
+
+    <script>
+      let ws = null;
+      let connected = false;
+      let count = 0;
+      const dot = document.getElementById('dot');
+      const statusText = document.getElementById('statusText');
+      const countEl = document.getElementById('count');
+      const portInput = document.getElementById('port');
+      const connectBtn = document.getElementById('connectBtn');
+      let reconnectTimer = null;
+
+      function setStatus(state, text) {
+        dot.className = 'dot' + (state === 'on' ? ' on' : state === 'err' ? ' err' : '');
+        statusText.textContent = text;
+        connectBtn.textContent = state === 'on' ? 'Reconnect' : 'Connect';
+      }
+
+      function connect() {
+        const port = (portInput.value || '3846').trim();
+        if (ws) { try { ws.close(); } catch (e) {} }
+        setStatus('', 'Connecting…');
+        try {
+          ws = new WebSocket('ws://127.0.0.1:' + port);
+        } catch (e) {
+          setStatus('err', 'Bad URL');
+          return;
+        }
+        ws.onopen = () => { connected = true; setStatus('on', 'Connected'); };
+        ws.onclose = () => {
+          connected = false;
+          setStatus('err', 'Disconnected');
+          if (reconnectTimer) clearTimeout(reconnectTimer);
+          reconnectTimer = setTimeout(connect, 3000); // auto-retry
+        };
+        ws.onerror = () => { setStatus('err', 'Connection error'); };
+        ws.onmessage = (event) => {
+          let msg;
+          try { msg = JSON.parse(event.data); } catch (e) { return; }
+          if (msg.type === 'command') {
+            count++;
+            countEl.textContent = count + ' cmds';
+            // Relay to the plugin main thread for execution.
+            parent.postMessage({ pluginMessage: { id: msg.id, command: msg.command, params: msg.params } }, '*');
+          }
+          // 'welcome' and others: no-op.
+        };
+      }
+
+      // Responses from the plugin main thread → send back over the socket.
+      window.onmessage = (event) => {
+        const r = event.data && event.data.pluginMessage;
+        if (!r || !r.id) return;
+        if (!ws || ws.readyState !== 1) return;
+        ws.send(JSON.stringify(r.ok ? { type: 'result', id: r.id, result: r.result } : { type: 'error', id: r.id, error: r.error }));
+      };
+
+      connectBtn.onclick = connect;
+      connect(); // auto-connect on launch
+    </script>
+  </body>
+</html>

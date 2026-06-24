@@ -17,6 +17,7 @@ export const VERSION = '1.3.0';
 export const VALID_FORMATS = ['yaml', 'json', 'tree'];
 export const DEFAULT_PORT = 3845; // Lovable Desktop autodetect port (override with --port/FRAMELINK_PORT)
 export const DEFAULT_HOST = '127.0.0.1';
+export const DEFAULT_BRIDGE_PORT = 3846; // WebSocket bridge for the Figma plugin (canvas writes)
 
 /** Read `--name value` or `--name=value` from argv; otherwise return fallback. */
 export function getArg(argv, name, fallback) {
@@ -70,6 +71,8 @@ export function resolveConfig(argv = process.argv, env = process.env, cwd = proc
     10,
   );
   const host = getArg(argv, '--host', env.FRAMELINK_HOST || env.HOST || DEFAULT_HOST);
+  const bridgePort = parseInt(getArg(argv, '--bridge-port', env.BRIDGE_PORT || String(DEFAULT_BRIDGE_PORT)), 10);
+  const noBridge = hasFlag(argv, '--no-bridge') || String(env.NO_BRIDGE) === 'true';
   const format = resolveFormat(argv, env);
   const imageDir = getArg(argv, '--image-dir', env.IMAGE_DIR || detectImageDir(cwd));
   const skipImageDownloads =
@@ -93,6 +96,8 @@ export function resolveConfig(argv = process.argv, env = process.env, cwd = proc
     globalToken,
     port: Number.isFinite(port) ? port : DEFAULT_PORT,
     host,
+    bridgePort: Number.isFinite(bridgePort) ? bridgePort : DEFAULT_BRIDGE_PORT,
+    noBridge,
     format,
     imageDir,
     skipImageDownloads,

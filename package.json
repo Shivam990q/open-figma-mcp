@@ -60,9 +60,10 @@
   "funding": "https://github.com/sponsors/Shivam990q",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.1",
-    "express": "^4.19.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "ws": "^8.21.0",
     "zod": "^3.23.8"
   }
 }

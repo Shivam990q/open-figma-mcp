@@ -53,6 +53,7 @@ import {
   VERSION,
 } from './config.js';
 import { applyProxy } from './proxy.js';
+import { startBridge, isPluginConnected, sendCommand } from './bridge.js';
 
 // Load env (honoring `--env <path>`) before resolving configuration.
 loadEnv();
@@ -73,6 +74,8 @@ const {
   globalToken,
   port,
   host,
+  bridgePort,
+  noBridge,
   format,
   imageDir: resolvedImageDir,
   skipImageDownloads,
@@ -95,6 +98,28 @@ function getActiveToken() {
     return store.tokenOverride;
   }
   return globalToken;
+}
+
+// Proxy a command to the connected Figma plugin (canvas read/write). Returns a
+// clear, honest message when the plugin isn't connected instead of failing
+// opaquely — canvas writes require the plugin (Plugin API), not REST.
+async function pluginCall(command, params = {}) {
+  try {
+    const result = await sendCommand(command, params);
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+  } catch (err) {
+    if (err && err.code === 'PLUGIN_NOT_CONNECTED') {
+      return {
+        content: [{ type: 'text', text: JSON.stringify({
+          supported: false,
+          reason: 'The OpenFigma Figma plugin is not connected. In Figma: Plugins → Development → "OpenFigma Bridge" (import figma-plugin/manifest.json once), run it, and keep it open. Canvas reads/writes flow through the plugin over the local WebSocket bridge.',
+          command,
+        }, null, 2) }],
+        isError: true,
+      };
+    }
+    return { content: [{ type: 'text', text: `Figma plugin error running "${command}": ${err.message}` }], isError: true };
+  }
 }
 
 // ----------------------------------------------------
@@ -177,6 +202,12 @@ if (!globalToken && stdioMode) {
 console.error(`[Startup] Writing Universal rules to workspace: ${projectPath}`);
 writeUniversalRules(projectPath);
 console.error(`[Startup] Output format: ${format} | Network: ${proxyStatus}`);
+
+// Start the WebSocket bridge for the Figma plugin (enables real canvas writes).
+// Singleton: started once for the whole process, shared by all MCP sessions.
+if (!noBridge) {
+  startBridge(bridgePort);
+}
 
 // Build a fresh MCP server instance with all tools registered. Using a factory
 // lets each transport/session own its server — required for the modern
@@ -937,14 +968,122 @@ server.tool(
   async () => {
     let me = null;
     try { me = await whoami(getActiveToken()); } catch (e) { me = { error: e.message }; }
-    return { content: [{ type: 'text', text: JSON.stringify(buildCapabilities(me), null, 2) }] };
+    return { content: [{ type: 'text', text: JSON.stringify(buildCapabilities(me, isPluginConnected()), null, 2) }] };
   },
 );
 
-// --- Canvas-write tools: honestly unsupported on a REST PAT ------------------
-// These previously fabricated success with mock IDs. They now tell the truth so
-// an agent never reports work that did not happen. (Canvas writes need the
-// Figma Plugin API; OpenFigma is REST-only.)
+// --- Canvas read/write via the OpenFigma Figma plugin (Plugin API over the WS bridge) ---
+// These ACTUALLY read and modify the canvas when the OpenFigma plugin is open in
+// Figma. When the plugin isn't connected, pluginCall() returns an honest
+// supported:false telling the user to open the plugin.
+
+server.tool('get_canvas_selection', 'Get the currently selected node(s) in the open Figma file (live, via the plugin).', {}, async () => pluginCall('get_selection'));
+
+server.tool('get_canvas_document', 'Get info about the current Figma page and document (live, via the plugin).', {}, async () => pluginCall('get_document_info'));
+
+server.tool(
+  'create_frame',
+  'Create a frame on the Figma canvas (via the plugin).',
+  {
+    x: z.number().optional().default(0),
+    y: z.number().optional().default(0),
+    width: z.number().optional().default(400),
+    height: z.number().optional().default(300),
+    name: z.string().optional().describe('Frame name'),
+    parentId: z.string().optional().describe('Optional parent node id to append into'),
+    fillColor: z.string().optional().describe('Background hex, e.g. #ffffff'),
+    layoutMode: z.enum(['NONE', 'HORIZONTAL', 'VERTICAL']).optional().describe('Auto-layout mode'),
+    itemSpacing: z.number().optional(),
+    padding: z.number().optional().describe('Uniform padding when auto-layout is set'),
+  },
+  async (a) => pluginCall('create_frame', a),
+);
+
+server.tool(
+  'create_rectangle',
+  'Create a rectangle on the Figma canvas (via the plugin).',
+  {
+    x: z.number().optional().default(0),
+    y: z.number().optional().default(0),
+    width: z.number().optional().default(100),
+    height: z.number().optional().default(100),
+    name: z.string().optional(),
+    parentId: z.string().optional(),
+    fillColor: z.string().optional().describe('Hex fill, e.g. #3b82f6'),
+    cornerRadius: z.number().optional(),
+  },
+  async (a) => pluginCall('create_rectangle', a),
+);
+
+server.tool(
+  'create_text',
+  'Create a text node on the Figma canvas (via the plugin).',
+  {
+    x: z.number().optional().default(0),
+    y: z.number().optional().default(0),
+    text: z.string().describe('The text content'),
+    fontSize: z.number().optional().default(16),
+    fontWeight: z.number().optional().describe('400, 500, 700, ...'),
+    color: z.string().optional().describe('Text color hex'),
+    name: z.string().optional(),
+    parentId: z.string().optional(),
+  },
+  async (a) => pluginCall('create_text', a),
+);
+
+server.tool(
+  'set_fill_color',
+  'Set the solid fill color of a node (via the plugin).',
+  { nodeId: z.string(), color: z.string().describe('Hex, e.g. #ff0000 or #ff0000aa') },
+  async (a) => pluginCall('set_fill_color', a),
+);
+
+server.tool(
+  'set_corner_radius',
+  'Set the corner radius of a node (via the plugin).',
+  { nodeId: z.string(), radius: z.number() },
+  async (a) => pluginCall('set_corner_radius', a),
+);
+
+server.tool(
+  'set_text',
+  'Replace the characters of a text node (via the plugin).',
+  { nodeId: z.string(), text: z.string() },
+  async (a) => pluginCall('set_text', a),
+);
+
+server.tool(
+  'move_node',
+  'Move a node to an absolute x/y on the canvas (via the plugin).',
+  { nodeId: z.string(), x: z.number(), y: z.number() },
+  async (a) => pluginCall('move_node', a),
+);
+
+server.tool(
+  'resize_node',
+  'Resize a node (via the plugin).',
+  { nodeId: z.string(), width: z.number(), height: z.number() },
+  async (a) => pluginCall('resize_node', a),
+);
+
+server.tool(
+  'clone_node',
+  'Clone an existing node (via the plugin).',
+  { nodeId: z.string(), x: z.number().optional(), y: z.number().optional() },
+  async (a) => pluginCall('clone_node', a),
+);
+
+server.tool(
+  'delete_node',
+  'Delete a node from the canvas (via the plugin).',
+  { nodeId: z.string() },
+  async (a) => pluginCall('delete_node', a),
+);
+
+// --- Legacy high-level write tools: still not possible (file-level / Plugin-only) ---
+// Granular canvas writes above work via the plugin. These remain honest no-ops:
+// creating whole FILES or converting HTML/Mermaid to canvas is out of scope for
+// the public APIs; use the granular create_* tools (plugin) instead.
 server.tool(
   'use_figma',
   {
