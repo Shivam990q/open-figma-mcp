@@ -384,6 +384,27 @@ server.tool(
   },
 );
 
+// Register Tool: get_code (drop-in alias for the official Figma MCP tool name).
+server.tool(
+  'get_code',
+  'Generate code for a Figma node (alias of generate_code, matching the official Figma MCP tool name).',
+  {
+    fileKey: z.string().describe('The Figma file key'),
+    nodeId: z.string().describe('The node ID to generate code from'),
+    framework: z.enum(CODEGEN_FRAMEWORKS).optional().default('react-tailwind').describe('Target framework'),
+    depth: z.number().optional().describe('Optional max tree depth'),
+  },
+  async ({ fileKey, nodeId, framework, depth }) => {
+    try {
+      const activeToken = getActiveToken();
+      const design = await getSimplifiedDesign(fileKey, [nodeId], activeToken, { maxDepth: depth || 0 });
+      return { content: [{ type: 'text', text: generateCode(design, framework) }] };
+    } catch (err) {
+      return { content: [{ type: 'text', text: `Error generating code: ${err.message}` }], isError: true };
+    }
+  },
+);
+
 // Register Tool: audit_accessibility
 server.tool(
   'audit_accessibility',
@@ -673,6 +694,25 @@ if (!skipImageDownloads) {
           content: [{ type: 'text', text: `Error capturing screenshot: ${err.message}` }],
           isError: true
         };
+      }
+    }
+  );
+
+  // Register Tool: get_image (drop-in alias for the official Figma MCP tool name).
+  server.tool(
+    'get_image',
+    'Render a Figma node to a PNG and save it locally (alias of get_screenshot, matching the official Figma MCP tool name).',
+    {
+      fileKey: z.string().describe('The Figma file key'),
+      nodeId: z.string().describe('The nodeId to render'),
+      scale: z.number().optional().default(2).describe('Render scale factor (1-4)'),
+    },
+    async ({ fileKey, nodeId, scale }) => {
+      try {
+        const result = await getScreenshot(fileKey, nodeId, getActiveToken(), resolvedImageDir, scale);
+        return { content: [{ type: 'text', text: `Saved image to figma-export.\n${JSON.stringify(result, null, 2)}` }] };
+      } catch (err) {
+        return { content: [{ type: 'text', text: `Error rendering image: ${err.message}` }], isError: true };
       }
     }
   );

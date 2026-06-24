@@ -14,7 +14,7 @@ const LANG: Record<string, string> = {
   swiftui: 'swift'
 }
 
-export function Codegen() {
+export function Codegen({ embedded }: { embedded?: boolean } = {}) {
   const { frameworks } = useApp()
   const [url, setUrl] = useState('')
   const [framework, setFramework] = useState('react-tailwind')
@@ -39,7 +39,7 @@ export function Codegen() {
 
   return (
     <div>
-      <PageHeader title="Code Gen" desc="Turn any frame or component into a starting point — 8 framework targets." />
+      {!embedded && <PageHeader title="Code Gen" desc="Turn any frame or component into a starting point — 8 framework targets." />}
 
       <div className="card mb-5 p-4">
         <div className="flex flex-col gap-3">

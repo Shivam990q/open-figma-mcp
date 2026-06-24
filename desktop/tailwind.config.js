@@ -4,40 +4,50 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: {
-          DEFAULT: '#0a0a0f',
-          soft: '#0f0f16',
-          card: '#14141d'
+        // Restrained, "designed" palette — mostly neutral, one accent.
+        bg: '#0b0b0e',
+        surface: '#131317',
+        elevated: '#1a1a20',
+        border: 'rgba(255,255,255,0.08)',
+        'border-strong': 'rgba(255,255,255,0.14)',
+        ink: '#ececee',
+        muted: '#9a9aa3',
+        faint: '#65656e',
+        accent: {
+          DEFAULT: '#7c5cff',
+          soft: 'rgba(124,92,255,0.14)',
+          hover: '#8d70ff'
         },
-        line: 'rgba(255,255,255,0.08)',
-        brand: {
-          DEFAULT: '#8b5cf6',
-          50: '#f5f3ff',
-          400: '#a78bfa',
-          500: '#8b5cf6',
-          600: '#7c3aed',
-          fuchsia: '#d946ef'
-        }
+        ok: '#3fb950',
+        warn: '#d29922',
+        danger: '#f85149'
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'monospace']
       },
-      boxShadow: {
-        glow: '0 0 40px -10px rgba(139,92,246,0.45)',
-        card: '0 8px 30px -12px rgba(0,0,0,0.6)'
+      fontSize: {
+        xs: ['11px', '16px'],
+        sm: ['13px', '20px'],
+        base: ['14px', '21px'],
+        lg: ['16px', '24px']
       },
-      backgroundImage: {
-        'brand-gradient': 'linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%)',
-        'radial-fade': 'radial-gradient(1200px 600px at 50% -10%, rgba(139,92,246,0.18), transparent)'
+      borderRadius: {
+        lg: '10px',
+        xl: '12px',
+        '2xl': '16px'
+      },
+      boxShadow: {
+        soft: '0 1px 2px rgba(0,0,0,0.4)',
+        pop: '0 12px 32px -12px rgba(0,0,0,0.7)'
       },
       keyframes: {
-        shimmer: { '0%': { backgroundPosition: '-200% 0' }, '100%': { backgroundPosition: '200% 0' } },
-        'pulse-ring': { '0%': { transform: 'scale(0.8)', opacity: '0.7' }, '100%': { transform: 'scale(2)', opacity: '0' } }
+        'fade-in': { from: { opacity: '0', transform: 'translateY(4px)' }, to: { opacity: '1', transform: 'translateY(0)' } },
+        breathe: { '0%,100%': { opacity: '1' }, '50%': { opacity: '0.4' } }
       },
       animation: {
-        shimmer: 'shimmer 2.5s linear infinite',
-        'pulse-ring': 'pulse-ring 1.6s ease-out infinite'
+        'fade-in': 'fade-in 0.2s ease-out',
+        breathe: 'breathe 2s ease-in-out infinite'
       }
     }
   },

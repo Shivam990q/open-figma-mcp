@@ -3,7 +3,7 @@ import { ImageDown, Download, FolderOpen, FileImage } from 'lucide-react'
 import { useApp } from '../store'
 import { PageHeader, Segmented, Spinner, EmptyState } from '../components/ui'
 
-export function Assets() {
+export function Assets({ embedded }: { embedded?: boolean } = {}) {
   const { settings } = useApp()
   const [url, setUrl] = useState('')
   const [nodes, setNodes] = useState('')
@@ -37,7 +37,7 @@ export function Assets() {
 
   return (
     <div>
-      <PageHeader title="Assets" desc="Render and export frames, icons & images at source quality." />
+      {!embedded && <PageHeader title="Assets" desc="Render and export frames, icons & images at source quality." />}
 
       <div className="card mb-5 p-4">
         <div className="flex flex-col gap-3">
@@ -67,19 +67,19 @@ export function Assets() {
         <EmptyState icon={<ImageDown size={32} />} title="No assets exported yet" hint="Export images and SVGs; they're saved to a figma-export folder you can open with one click." />
       ) : (
         <div className="card overflow-hidden">
-          <div className="flex items-center justify-between border-b border-line px-4 py-2.5">
-            <span className="text-sm font-semibold text-zinc-300">{out.results.length} file(s) exported</span>
+          <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+            <span className="text-sm font-semibold text-muted">{out.results.length} file(s) exported</span>
             <button className="btn-ghost px-3 py-1.5 text-xs" onClick={() => window.api.showFolder(out.dir)}>
               <FolderOpen size={14} /> Open folder
             </button>
           </div>
-          <div className="divide-y divide-line">
+          <div className="divide-y divide-border">
             {out.results.map((r) => (
               <div key={r.nodeId} className="flex items-center gap-3 px-4 py-3">
-                <FileImage size={18} className="text-brand-400" />
+                <FileImage size={18} className="text-accent" />
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-sm text-zinc-200">{r.fileName}</div>
-                  <div className="truncate font-mono text-xs text-zinc-500">{r.localUrl}</div>
+                  <div className="truncate text-sm text-ink">{r.fileName}</div>
+                  <div className="truncate font-mono text-xs text-faint">{r.localUrl}</div>
                 </div>
               </div>
             ))}

@@ -8,6 +8,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **`get_code` and `get_image` tool aliases** — match the official Figma Dev Mode
+  MCP tool names for closer drop-in compatibility in editors.
 - **Streamable HTTP transport** (MCP spec 2025-03-26) at `/mcp` — what Lovable and
   recent Cursor/Claude clients expect. Server refactored to a per-session factory;
   legacy SSE remains at `/sse`. Verified end-to-end with a real `initialize` +
@@ -31,6 +33,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 - Lovable / HTTP client config now uses `http://localhost:3845/mcp`.
+- **Desktop app redesigned** — simplified from 8 screens to 3 (Home / Playground /
+  Settings). Home merges server control + editor setup (Cursor/VS Code/Claude/
+  Windsurf/Lovable config with copy). Restrained Linear-style visual language
+  (neutral palette, one accent) replacing the gradient-heavy look. The 5 tools
+  are now consolidated under one tabbed Playground.
 
 ## [1.3.0]
 

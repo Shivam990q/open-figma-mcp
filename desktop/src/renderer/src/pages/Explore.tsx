@@ -3,7 +3,7 @@ import { Compass, Search, AlertTriangle } from 'lucide-react'
 import type { FetchResult } from '../global'
 import { PageHeader, Segmented, Spinner, CodeBlock, StatCard, EmptyState } from '../components/ui'
 
-export function Explore() {
+export function Explore({ embedded }: { embedded?: boolean } = {}) {
   const [url, setUrl] = useState('')
   const [format, setFormat] = useState<'yaml' | 'json' | 'tree'>('yaml')
   const [busy, setBusy] = useState(false)
@@ -26,12 +26,12 @@ export function Explore() {
 
   return (
     <div>
-      <PageHeader title="Explore" desc="Paste a Figma file or frame URL to see compact, token-cheap design data." />
+      {!embedded && <PageHeader title="Explore" desc="Paste a Figma file or frame URL to see compact, token-cheap design data." />}
 
       <div className="card mb-5 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-faint" />
             <input
               className="field pl-10"
               placeholder="https://figma.com/design/ABC123/My-File?node-id=12-822"

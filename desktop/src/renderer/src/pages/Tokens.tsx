@@ -3,7 +3,7 @@ import { Palette, Sparkles } from 'lucide-react'
 import { useApp } from '../store'
 import { PageHeader, Segmented, Spinner, CodeBlock, EmptyState } from '../components/ui'
 
-export function TokensPage() {
+export function TokensPage({ embedded }: { embedded?: boolean } = {}) {
   const { tokenFormats } = useApp()
   const [url, setUrl] = useState('')
   const [format, setFormat] = useState<string>('css')
@@ -31,7 +31,7 @@ export function TokensPage() {
 
   return (
     <div>
-      <PageHeader title="Design Tokens" desc="Extract colors, type, spacing, radii & shadows — export to any format." />
+      {!embedded && <PageHeader title="Design Tokens" desc="Extract colors, type, spacing, radii & shadows — export to any format." />}
 
       <div className="card mb-5 p-4">
         <div className="flex flex-col gap-3">
@@ -62,8 +62,8 @@ export function TokensPage() {
               <div className="flex flex-wrap gap-3">
                 {colors.map((c) => (
                   <div key={c.name + c.value} className="flex flex-col items-center gap-1.5">
-                    <div className="h-12 w-12 rounded-xl border border-line shadow-card" style={{ background: c.value }} />
-                    <span className="font-mono text-[10px] text-zinc-500">{c.value}</span>
+                    <div className="h-12 w-12 rounded-xl border border-border shadow-soft" style={{ background: c.value }} />
+                    <span className="font-mono text-[10px] text-faint">{c.value}</span>
                   </div>
                 ))}
               </div>

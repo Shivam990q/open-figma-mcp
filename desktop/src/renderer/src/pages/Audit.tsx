@@ -13,7 +13,7 @@ interface ContrastFinding {
   bgColor: string
 }
 
-export function Audit() {
+export function Audit({ embedded }: { embedded?: boolean } = {}) {
   const [url, setUrl] = useState('')
   const [bg, setBg] = useState('#ffffff')
   const [busy, setBusy] = useState(false)
@@ -39,7 +39,7 @@ export function Audit() {
 
   return (
     <div>
-      <PageHeader title="Accessibility" desc="WCAG contrast & tap-target audit — catch issues before you write code." />
+      {!embedded && <PageHeader title="Accessibility" desc="WCAG contrast & tap-target audit — catch issues before you write code." />}
 
       <div className="card mb-5 p-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
@@ -50,8 +50,8 @@ export function Audit() {
             onChange={(e) => setUrl(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && run()}
           />
-          <div className="no-drag flex items-center gap-2 rounded-xl border border-line bg-black/30 px-3 py-2">
-            <span className="text-xs text-zinc-500">Page bg</span>
+          <div className="no-drag flex items-center gap-2 rounded-xl border border-border bg-bg px-3 py-2">
+            <span className="text-xs text-faint">Page bg</span>
             <input type="color" value={bg} onChange={(e) => setBg(e.target.value)} className="h-7 w-9 cursor-pointer rounded bg-transparent" />
           </div>
           <button className="btn-primary" onClick={run} disabled={busy || !url.trim()}>
@@ -74,23 +74,23 @@ export function Audit() {
 
           {failures.length > 0 && (
             <div className="card overflow-hidden">
-              <div className="border-b border-line px-4 py-2.5 text-sm font-semibold text-zinc-300">Contrast failures</div>
-              <div className="max-h-[45vh] divide-y divide-line overflow-auto">
+              <div className="border-b border-border px-4 py-2.5 text-sm font-semibold text-muted">Contrast failures</div>
+              <div className="max-h-[45vh] divide-y divide-border overflow-auto">
                 {failures.map((f) => (
                   <div key={f.nodeId} className="flex items-center gap-4 px-4 py-3">
                     <div
-                      className="grid h-10 w-16 shrink-0 place-items-center rounded-lg border border-line text-xs font-semibold"
+                      className="grid h-10 w-16 shrink-0 place-items-center rounded-lg border border-border text-xs font-semibold"
                       style={{ background: f.bgColor, color: f.textColor }}
                     >
                       Aa
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium text-zinc-200">{f.name}</div>
-                      {f.text && <div className="truncate text-xs text-zinc-500">"{f.text}"</div>}
+                      <div className="truncate text-sm font-medium text-ink">{f.name}</div>
+                      {f.text && <div className="truncate text-xs text-faint">"{f.text}"</div>}
                     </div>
                     <div className="text-right">
-                      <div className="font-mono text-sm font-semibold text-red-300">{f.ratio}:1</div>
-                      <div className="text-[11px] text-zinc-500">needs {f.required}:1</div>
+                      <div className="font-mono text-sm font-semibold text-danger">{f.ratio}:1</div>
+                      <div className="text-[11px] text-faint">needs {f.required}:1</div>
                     </div>
                   </div>
                 ))}

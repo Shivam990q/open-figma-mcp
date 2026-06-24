@@ -196,7 +196,7 @@ MCP"):
 
 **Design → code**
 - `get_design_tokens` — extract a token system, export as `css`/`scss`/`tailwind`/`tailwind4`/`js`/`ts`/`json` (W3C)/`style-dictionary`.
-- `generate_code` — component code in `react-tailwind`, `react-inline`, `vue`, `svelte`, `angular`, `html`, `flutter`, or `swiftui` (responsive via constraints).
+- `generate_code` — component code in `react-tailwind`, `react-inline`, `vue`, `svelte`, `angular`, `html`, `flutter`, or `swiftui` (responsive via constraints). Also available as **`get_code`** (official Figma MCP tool-name alias).
 - `generate_component_api` — typed TS `interface` / Vue `defineProps` from component properties & variants.
 - `extract_vectors` — real **inline SVG** icons from path geometry (themeable `currentColor`).
 

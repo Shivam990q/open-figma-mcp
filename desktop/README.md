@@ -10,13 +10,14 @@ touching a terminal. Power users can still use the CLI.
 
 ## Features
 
-- **Connect** — validate a free Figma Personal Access Token (stored locally).
-- **MCP Server** — start/stop the server, watch live logs, copy ready-made
-  config for Cursor / VS Code / Claude Desktop / Lovable.
-- **Explore** — paste a Figma URL, see simplified data + how much context you saved.
-- **Design Tokens** — extract & preview a palette, export to 8 formats.
-- **Code Gen** — 8 framework targets (React/Vue/Svelte/Angular/HTML/Flutter/SwiftUI).
-- **Settings** — defaults for host/port/format, disconnect account.
+- **Home** — connect your Figma token, start/stop the MCP server, and copy a
+  ready-made config for **Cursor / VS Code / Claude / Windsurf / Lovable**.
+  Live logs are one collapsible panel away.
+- **Playground** — try every tool (Explore, Tokens, Code, Accessibility, Assets)
+  in one tabbed view, no editor required.
+- **Settings** — host/port/format defaults and account.
+
+Three focused screens, a restrained Linear-style UI — not a cluttered dashboard.
 
 ## Develop
 

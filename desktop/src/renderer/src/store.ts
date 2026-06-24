@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { AppSettings } from './global'
 
-export type Route = 'dashboard' | 'server' | 'explore' | 'tokens' | 'codegen' | 'audit' | 'assets' | 'settings'
+export type Route = 'home' | 'playground' | 'settings'
 
 interface LogLine {
   stream: 'out' | 'err'
@@ -31,7 +31,7 @@ interface AppState {
 
 export const useApp = create<AppState>((set) => ({
   ready: false,
-  route: 'dashboard',
+  route: 'home',
   connected: false,
   handle: '',
   settings: { port: 3845, host: '127.0.0.1', format: 'yaml', imageDir: '', theme: 'dark', skipImageDownloads: false },
