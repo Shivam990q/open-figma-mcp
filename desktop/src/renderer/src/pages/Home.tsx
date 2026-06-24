@@ -14,11 +14,36 @@ export function Home() {
   const [transport, setTransport] = useState<'HTTP (recommended)' | 'Command (stdio)'>('HTTP (recommended)')
   const [showLogs, setShowLogs] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [pluginConnected, setPluginConnected] = useState(false)
   const logRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (showLogs) logRef.current?.scrollTo({ top: logRef.current.scrollHeight })
   }, [logs, showLogs])
+
+  // Poll the running server's /health to surface live Figma-plugin status.
+  useEffect(() => {
+    if (!server.running) {
+      setPluginConnected(false)
+      return
+    }
+    let active = true
+    const poll = async () => {
+      try {
+        const res = await fetch(`http://${server.host}:${server.port}/health`)
+        const j = await res.json()
+        if (active) setPluginConnected(!!(j.figmaPlugin && j.figmaPlugin.connected))
+      } catch {
+        if (active) setPluginConnected(false)
+      }
+    }
+    poll()
+    const t = setInterval(poll, 4000)
+    return () => {
+      active = false
+      clearInterval(t)
+    }
+  }, [server.running, server.host, server.port])
 
   async function toggle() {
     setBusy(true)
@@ -71,6 +96,26 @@ export function Home() {
               <label className="label">Port</label>
               <input className="field" value={port} onChange={(e) => setPort(e.target.value)} />
             </div>
+          </div>
+        )}
+
+        {running && (
+          <div className="mt-4 flex items-center gap-2.5 border-t border-border pt-4 text-sm">
+            <span className={`h-2 w-2 rounded-full ${pluginConnected ? 'bg-ok' : 'bg-faint'}`} />
+            <span className="text-muted">
+              Figma plugin:{' '}
+              <span className={pluginConnected ? 'text-ink' : 'text-faint'}>
+                {pluginConnected ? 'connected — canvas writes enabled' : 'not connected'}
+              </span>
+            </span>
+            {!pluginConnected && (
+              <button
+                className="btn-ghost ml-auto px-2 py-1 text-xs"
+                onClick={() => window.api.openExternal('https://github.com/Shivam990q/open-figma-mcp/tree/main/figma-plugin')}
+              >
+                Enable canvas writes
+              </button>
+            )}
           </div>
         )}
       </div>

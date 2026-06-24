@@ -125,6 +125,8 @@ All options can be set via CLI flag **or** environment variable. Precedence: **C
 | `--figma-oauth-token` | `FIGMA_OAUTH_TOKEN` | — | OAuth Bearer token (uses `Authorization: Bearer`) |
 | `--port` | `FRAMELINK_PORT` / `PORT` | `3845` | HTTP port (3845 = Lovable autodetect) |
 | `--host` | `FRAMELINK_HOST` / `HOST` | `127.0.0.1` | HTTP host |
+| `--bridge-port` | `BRIDGE_PORT` | `3846` | WebSocket bridge port for the Figma plugin (canvas writes) |
+| `--no-bridge` | `NO_BRIDGE` | `false` | Don't start the Figma-plugin bridge |
 | `--format` | `OUTPUT_FORMAT` | `yaml` | `yaml`, `json`, or `tree` |
 | `--json` | — | — | Alias for `--format=json` |
 | `--image-dir` | `IMAGE_DIR` | autodetected | Base dir for image downloads |
