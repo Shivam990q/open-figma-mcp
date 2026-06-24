@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ## [Unreleased]
 
 ### Added
+- **Complete canvas toolset** — added `create_ellipse`, `create_component_from_node`,
+  `create_instance`, `set_stroke_color`, `set_opacity`, `add_drop_shadow`,
+  `set_image_fill` (image-from-URL), `set_auto_layout`, `group_nodes`, `set_name`,
+  `get_node_info` on top of the initial write tools — professional canvas parity.
+- **`ARCHITECTURE.md`** — deep architecture & working-mechanism doc (with diagrams)
+  explaining how OpenFigma *and* the official Figma MCP work.
 - **Real canvas writes** 🎉 — a free companion **Figma plugin** (`figma-plugin/`)
   + WebSocket bridge gives agents live canvas read/write: `create_frame`,
   `create_rectangle`, `create_text`, `set_fill_color`, `set_corner_radius`,

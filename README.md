@@ -221,10 +221,12 @@ MCP"):
 - Code Connect toolchain (`get_code_connect_map`, `get_code_connect_suggestions`, …).
 
 **Canvas read/write** (live when the [OpenFigma Figma plugin](figma-plugin/README.md) is connected)
-- `get_canvas_selection`, `get_canvas_document` — read live selection / document.
-- `create_frame`, `create_rectangle`, `create_text` — add nodes to the canvas.
-- `set_fill_color`, `set_corner_radius`, `set_text`, `move_node`, `resize_node`, `clone_node`, `delete_node` — edit nodes.
-- When the plugin isn't connected these return an honest `supported:false`. File-level ops (`create_new_file`, `generate_figma_design`, `generate_diagram`, `upload_assets`) remain out of scope.
+- `get_canvas_selection`, `get_canvas_document`, `get_node_info` — read live selection / document / node.
+- `create_frame`, `create_rectangle`, `create_ellipse`, `create_text` — add nodes.
+- `create_component_from_node`, `create_instance`, `group_nodes` — components & structure.
+- `set_fill_color`, `set_stroke_color`, `set_corner_radius`, `set_opacity`, `add_drop_shadow`, `set_image_fill` — styling.
+- `set_text`, `set_name`, `set_auto_layout`, `move_node`, `resize_node`, `clone_node`, `delete_node` — edit.
+- When the plugin isn't connected these return an honest `supported:false`. File-level ops (`create_new_file`, HTML→canvas, Mermaid→FigJam) remain out of scope.
 
 ---
 
@@ -243,6 +245,7 @@ The unit tests run with no network and no token; the simplification tests use a 
 ## 🤝 Project & community
 
 - [Contributing guide](CONTRIBUTING.md) — dev setup, how to add a framework or token format
+- [Architecture & working mechanism](ARCHITECTURE.md) — how OpenFigma and the official Figma MCP work, with diagrams
 - [Deployment guide](DEPLOYMENT.md) — stdio, HTTP, Docker, cloud platforms
 - [Changelog](CHANGELOG.md) — what changed, version by version
 - [Security policy](SECURITY.md) — how to report issues, and the localhost/auth notes
