@@ -174,6 +174,116 @@ async function handle(command, p) {
       return { deleted: id };
     }
 
+    case 'set_stroke_color': {
+      const n = await getNode(p.nodeId);
+      const paint = solidPaint(p.color);
+      if (!paint) throw new Error('Invalid color: ' + p.color);
+      if (!('strokes' in n)) throw new Error('Node does not support strokes');
+      n.strokes = [paint];
+      if (p.strokeWeight != null && 'strokeWeight' in n) n.strokeWeight = p.strokeWeight;
+      return serialize(n);
+    }
+
+    case 'set_opacity': {
+      const n = await getNode(p.nodeId);
+      if (!('opacity' in n)) throw new Error('Node does not support opacity');
+      n.opacity = p.opacity;
+      return serialize(n);
+    }
+
+    case 'add_drop_shadow': {
+      const n = await getNode(p.nodeId);
+      if (!('effects' in n)) throw new Error('Node does not support effects');
+      const c = hexToRgba(p.color || '#00000040') || { r: 0, g: 0, b: 0, a: 0.25 };
+      const shadow = {
+        type: 'DROP_SHADOW',
+        color: { r: c.r, g: c.g, b: c.b, a: c.a },
+        offset: { x: p.offsetX || 0, y: p.offsetY != null ? p.offsetY : 4 },
+        radius: p.radius != null ? p.radius : 8,
+        spread: p.spread || 0,
+        visible: true,
+        blendMode: 'NORMAL'
+      };
+      n.effects = [...n.effects, shadow];
+      return serialize(n);
+    }
+
+    case 'create_ellipse': {
+      const e = figma.createEllipse();
+      e.x = p.x || 0;
+      e.y = p.y || 0;
+      e.resize(p.width || 100, p.height || 100);
+      if (p.name) e.name = p.name;
+      const paint = p.fillColor ? solidPaint(p.fillColor) : null;
+      if (paint) e.fills = [paint];
+      await appendTo(e, p.parentId);
+      return serialize(e);
+    }
+
+    case 'create_component_from_node': {
+      const n = await getNode(p.nodeId);
+      const comp = figma.createComponentFromNode(n);
+      if (p.name) comp.name = p.name;
+      return serialize(comp);
+    }
+
+    case 'create_instance': {
+      const comp = await getNode(p.componentId);
+      if (comp.type !== 'COMPONENT') throw new Error('Node ' + p.componentId + ' is not a COMPONENT');
+      const inst = comp.createInstance();
+      if (p.x != null) inst.x = p.x;
+      if (p.y != null) inst.y = p.y;
+      await appendTo(inst, p.parentId);
+      return serialize(inst);
+    }
+
+    case 'set_auto_layout': {
+      const n = await getNode(p.nodeId);
+      if (!('layoutMode' in n)) throw new Error('Node does not support auto-layout');
+      n.layoutMode = p.mode || 'VERTICAL';
+      if (p.itemSpacing != null) n.itemSpacing = p.itemSpacing;
+      if (p.padding != null) {
+        n.paddingTop = n.paddingBottom = n.paddingLeft = n.paddingRight = p.padding;
+      }
+      if (p.primaryAxisAlignItems) n.primaryAxisAlignItems = p.primaryAxisAlignItems;
+      if (p.counterAxisAlignItems) n.counterAxisAlignItems = p.counterAxisAlignItems;
+      return serialize(n);
+    }
+
+    case 'group_nodes': {
+      const ids = p.nodeIds || [];
+      const nodes = [];
+      for (const id of ids) nodes.push(await getNode(id));
+      if (!nodes.length) throw new Error('No nodes to group');
+      const group = figma.group(nodes, nodes[0].parent || figma.currentPage);
+      if (p.name) group.name = p.name;
+      return serialize(group);
+    }
+
+    case 'set_name': {
+      const n = await getNode(p.nodeId);
+      n.name = String(p.name == null ? '' : p.name);
+      return serialize(n);
+    }
+
+    case 'get_node_info': {
+      const n = await getNode(p.nodeId);
+      const info = serialize(n);
+      if ('children' in n) info.childCount = n.children.length;
+      if ('fills' in n && Array.isArray(n.fills)) info.fillCount = n.fills.length;
+      if ('layoutMode' in n) info.layoutMode = n.layoutMode;
+      if ('cornerRadius' in n) info.cornerRadius = n.cornerRadius;
+      return info;
+    }
+
+    case 'set_image_fill': {
+      const n = await getNode(p.nodeId);
+      if (!('fills' in n)) throw new Error('Node does not support fills');
+      const image = await figma.createImageAsync(p.imageUrl);
+      n.fills = [{ type: 'IMAGE', imageHash: image.hash, scaleMode: p.scaleMode || 'FILL' }];
+      return serialize(n);
+    }
+
     default:
       throw new Error('Unknown command: ' + command);
   }

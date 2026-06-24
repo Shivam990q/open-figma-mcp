@@ -1080,6 +1080,110 @@ server.tool(
   async (a) => pluginCall('delete_node', a),
 );
 
+server.tool(
+  'set_stroke_color',
+  'Set a node\'s stroke (border) color and optional weight (via the plugin).',
+  { nodeId: z.string(), color: z.string().describe('Hex'), strokeWeight: z.number().optional() },
+  async (a) => pluginCall('set_stroke_color', a),
+);
+
+server.tool(
+  'set_opacity',
+  'Set a node\'s opacity 0..1 (via the plugin).',
+  { nodeId: z.string(), opacity: z.number().min(0).max(1) },
+  async (a) => pluginCall('set_opacity', a),
+);
+
+server.tool(
+  'add_drop_shadow',
+  'Add a drop shadow effect to a node (via the plugin).',
+  {
+    nodeId: z.string(),
+    color: z.string().optional().describe('Shadow hex incl. alpha, e.g. #00000040'),
+    offsetX: z.number().optional(),
+    offsetY: z.number().optional(),
+    radius: z.number().optional(),
+    spread: z.number().optional(),
+  },
+  async (a) => pluginCall('add_drop_shadow', a),
+);
+
+server.tool(
+  'create_ellipse',
+  'Create an ellipse on the canvas (via the plugin).',
+  {
+    x: z.number().optional().default(0),
+    y: z.number().optional().default(0),
+    width: z.number().optional().default(100),
+    height: z.number().optional().default(100),
+    name: z.string().optional(),
+    parentId: z.string().optional(),
+    fillColor: z.string().optional(),
+  },
+  async (a) => pluginCall('create_ellipse', a),
+);
+
+server.tool(
+  'create_component_from_node',
+  'Convert an existing node into a reusable component (via the plugin).',
+  { nodeId: z.string(), name: z.string().optional() },
+  async (a) => pluginCall('create_component_from_node', a),
+);
+
+server.tool(
+  'create_instance',
+  'Create an instance of a component (via the plugin).',
+  {
+    componentId: z.string().describe('A COMPONENT node id'),
+    x: z.number().optional(),
+    y: z.number().optional(),
+    parentId: z.string().optional(),
+  },
+  async (a) => pluginCall('create_instance', a),
+);
+
+server.tool(
+  'set_auto_layout',
+  'Apply auto-layout to a frame (via the plugin).',
+  {
+    nodeId: z.string(),
+    mode: z.enum(['HORIZONTAL', 'VERTICAL']).optional().default('VERTICAL'),
+    itemSpacing: z.number().optional(),
+    padding: z.number().optional(),
+    primaryAxisAlignItems: z.enum(['MIN', 'CENTER', 'MAX', 'SPACE_BETWEEN']).optional(),
+    counterAxisAlignItems: z.enum(['MIN', 'CENTER', 'MAX', 'BASELINE']).optional(),
+  },
+  async (a) => pluginCall('set_auto_layout', a),
+);
+
+server.tool(
+  'group_nodes',
+  'Group multiple nodes (via the plugin).',
+  { nodeIds: z.array(z.string()), name: z.string().optional() },
+  async (a) => pluginCall('group_nodes', a),
+);
+
+server.tool(
+  'set_name',
+  'Rename a node (via the plugin).',
+  { nodeId: z.string(), name: z.string() },
+  async (a) => pluginCall('set_name', a),
+);
+
+server.tool(
+  'get_node_info',
+  'Get details about a specific node by id (via the plugin).',
+  { nodeId: z.string() },
+  async (a) => pluginCall('get_node_info', a),
+);
+
+server.tool(
+  'set_image_fill',
+  'Fill a node with an image from a URL (uses figma.createImageAsync — no render quota). Closes the asset-upload gap.',
+  { nodeId: z.string(), imageUrl: z.string().describe('Image URL to fetch and place'), scaleMode: z.enum(['FILL', 'FIT', 'CROP', 'TILE']).optional() },
+  async (a) => pluginCall('set_image_fill', a),
+);
+
 // --- Legacy high-level write tools: still not possible (file-level / Plugin-only) ---
 // Granular canvas writes above work via the plugin. These remain honest no-ops:
 // creating whole FILES or converting HTML/Mermaid to canvas is out of scope for

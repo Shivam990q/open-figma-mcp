@@ -49,9 +49,12 @@ export function buildCapabilities(me, pluginConnected = false) {
         ? 'Plugin connected — canvas read/write tools are live.'
         : 'Plugin not connected. Import figma-plugin/manifest.json in Figma (Plugins → Development → Import) and run "OpenFigma Bridge" to enable canvas writes.',
       tools: [
-        'get_canvas_selection', 'get_canvas_document', 'create_frame', 'create_rectangle',
-        'create_text', 'set_fill_color', 'set_corner_radius', 'set_text', 'move_node',
-        'resize_node', 'clone_node', 'delete_node',
+        'get_canvas_selection', 'get_canvas_document', 'get_node_info',
+        'create_frame', 'create_rectangle', 'create_ellipse', 'create_text',
+        'set_fill_color', 'set_stroke_color', 'set_corner_radius', 'set_opacity',
+        'add_drop_shadow', 'set_image_fill', 'set_text', 'set_name',
+        'set_auto_layout', 'move_node', 'resize_node', 'clone_node', 'delete_node',
+        'group_nodes', 'create_component_from_node', 'create_instance',
       ],
     },
     realTools: {
@@ -79,7 +82,7 @@ export function buildCapabilities(me, pluginConnected = false) {
         create_new_file: 'Creating a brand-new Figma FILE is not possible from a plugin (it operates within an open file).',
         generate_figma_design: 'Full HTML/CSS → canvas conversion is not implemented; build with create_frame/create_text/etc.',
         generate_diagram: 'Mermaid → FigJam generation is not implemented.',
-        upload_assets: 'Uploading arbitrary image bytes is not yet wired through the plugin.',
+        upload_assets: 'Uploading raw image bytes is out of scope; use set_image_fill with an image URL (figma.createImageAsync) instead.',
       },
       recommendation:
         'To implement a design in code: get_figma_data + generate_code + get_design_tokens + download_assets. To build ON the canvas: open the plugin and use the create_*/set_* tools.',
