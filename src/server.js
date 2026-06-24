@@ -7,6 +7,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { z } from 'zod';
 import path from 'path';
+import fs from 'fs';
 import { randomUUID } from 'crypto';
 import { AsyncLocalStorage } from 'async_hooks';
 
@@ -35,6 +36,7 @@ import { writeUniversalRules } from './rules.js';
 import { serialize } from './serialize.js';
 import { simplifyDesign } from './simplify.js';
 import { extractTokens, formatTokens, TOKEN_FORMATS } from './tokens.js';
+import { generateDesignSystemRules } from './designRules.js';
 import { auditAccessibility } from './a11y.js';
 import { generateCode, generateComponentApi, CODEGEN_FRAMEWORKS } from './codegen.js';
 import { buildCapabilities, unsupported } from './capabilities.js';
@@ -353,6 +355,43 @@ server.tool(
     } catch (err) {
       console.error('[Tool get_design_tokens] Error:', err);
       return { content: [{ type: 'text', text: `Error extracting tokens: ${err.message}` }], isError: true };
+    }
+  },
+);
+
+// Register Tool: create_design_system_rules
+// Drop-in equivalent of the official Figma MCP tool. Generates a rules file from
+// the design's ACTUAL tokens so generated code uses the real design system.
+server.tool(
+  'create_design_system_rules',
+  "Generate a design-system rules file (markdown) from the design's real tokens — colors, type ramp, spacing, radii, shadows — so an agent generates code that matches the design system. Optionally writes it to the workspace.",
+  {
+    fileKey: z.string().describe('The Figma file key'),
+    nodeIds: z.array(z.string()).optional().describe('Optional node IDs to scope extraction'),
+    framework: z.enum(CODEGEN_FRAMEWORKS).optional().default('react-tailwind').describe('Target framework for guidance'),
+    write: z.boolean().optional().describe('If true, write the rules to <workspace>/figma-design-rules.md'),
+  },
+  async ({ fileKey, nodeIds, framework, write }) => {
+    try {
+      const activeToken = getActiveToken();
+      console.error(`[Tool create_design_system_rules] Generating ${framework} rules for ${fileKey}`);
+      const raw = await getRawData(fileKey, nodeIds, activeToken);
+      let variables;
+      try { variables = await fetchFigmaVariables(fileKey, activeToken); } catch (e) {}
+      const tokens = extractTokens(raw, variables);
+      const rules = generateDesignSystemRules(tokens, { framework, projectName: raw?.name || 'This project' });
+      let wrote;
+      if (write) {
+        const target = path.join(projectPath, 'figma-design-rules.md');
+        fs.writeFileSync(target, rules, 'utf-8');
+        wrote = target;
+        console.error(`[Tool create_design_system_rules] Wrote ${target}`);
+      }
+      const text = wrote ? `Wrote design-system rules to ${wrote}\n\n${rules}` : rules;
+      return { content: [{ type: 'text', text }] };
+    } catch (err) {
+      console.error('[Tool create_design_system_rules] Error:', err);
+      return { content: [{ type: 'text', text: `Error generating design system rules: ${err.message}` }], isError: true };
     }
   },
 );

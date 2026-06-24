@@ -426,6 +426,31 @@ section('design tokens: extraction + 8-format export + color naming');
 }
 
 // ---------------------------------------------------------------------------
+section('design system rules generator');
+// ---------------------------------------------------------------------------
+{
+  const { generateDesignSystemRules } = await import('../src/designRules.js');
+  const tokens = {
+    source: 'inferred',
+    colors: [{ name: 'blue-500', value: '#3b82f6', count: 9 }, { name: 'gray-950', value: '#0a0a0a', count: 4 }],
+    fontFamilies: [{ name: 'font-inter', value: 'Inter', count: 5 }],
+    fontSizes: [{ name: 'base', value: 16, count: 3 }],
+    fontWeights: [{ name: 'weight-600', value: 600, count: 2 }],
+    lineHeights: [{ name: 'leading-24', value: 24, count: 2 }],
+    letterSpacing: [], spacing: [{ name: 'space-8', value: 8, count: 5 }],
+    radius: [{ name: 'radius-12', value: 12, count: 2 }], shadows: [{ name: 'shadow-1', value: '0px 4px 8px 0px #00000040', count: 1 }],
+  };
+  const md = generateDesignSystemRules(tokens, { framework: 'react-tailwind', projectName: 'Acme' });
+  ok(md.includes('# Design System Rules'), 'rules has title');
+  ok(md.includes('blue-500') && md.includes('#3b82f6'), 'rules list named colors with values');
+  ok(md.includes('Inter'), 'rules list font family');
+  ok(md.includes('## Spacing') && md.includes('space-8'), 'rules include spacing ramp');
+  ok(md.includes('react-tailwind'), 'rules reflect chosen framework');
+  const swift = generateDesignSystemRules(tokens, { framework: 'swiftui' });
+  ok(swift.includes('SwiftUI') || swift.includes('Color(red'), 'framework-specific guidance for swiftui');
+}
+
+// ---------------------------------------------------------------------------
 section('accessibility: WCAG contrast math + audit');
 // ---------------------------------------------------------------------------
 {
