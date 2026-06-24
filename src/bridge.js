@@ -23,6 +23,15 @@ let started = false;
 let bridgePort = null;
 const pending = new Map(); // requestId -> { resolve, reject, timer }
 
+/** Reject (and clear) every in-flight request — used when the plugin drops. */
+function rejectAllPending(reason) {
+  for (const [, p] of pending) {
+    clearTimeout(p.timer);
+    p.reject(new Error(reason));
+  }
+  pending.clear();
+}
+
 /** Start the bridge once. Safe to call multiple times. */
 export function startBridge(port = 3846) {
   if (started) return;
@@ -53,13 +62,15 @@ export function startBridge(port = 3846) {
         }
       });
 
+      const onGone = (why) => {
+        if (pluginSocket === socket) pluginSocket = null;
+        rejectAllPending(why);
+      };
       socket.on('close', () => {
         console.error('[Bridge] Figma plugin disconnected.');
-        if (pluginSocket === socket) pluginSocket = null;
+        onGone('Figma plugin disconnected before responding.');
       });
-      socket.on('error', () => {
-        if (pluginSocket === socket) pluginSocket = null;
-      });
+      socket.on('error', () => onGone('Figma plugin socket error.'));
 
       try {
         socket.send(JSON.stringify({ type: 'welcome', server: 'open-figma-mcp' }));
@@ -68,12 +79,16 @@ export function startBridge(port = 3846) {
       }
     });
 
-    wss.on('error', (err) => {
-      // EADDRINUSE etc. — another instance likely owns the bridge already.
-      console.error(`[Bridge] WebSocket server error: ${err.message}`);
+    wss.on('listening', () => {
+      console.error(`[Bridge] Listening on ws://127.0.0.1:${port} — open the OpenFigma plugin in Figma to enable canvas writes.`);
     });
-
-    console.error(`[Bridge] Listening on ws://127.0.0.1:${port} — open the OpenFigma plugin in Figma to enable canvas writes.`);
+    wss.on('error', (err) => {
+      if (err && err.code === 'EADDRINUSE') {
+        console.error(`[Bridge] Port ${port} already in use — another OpenFigma instance likely owns the bridge (that's fine; canvas writes route through it).`);
+      } else {
+        console.error(`[Bridge] WebSocket server error: ${err.message}`);
+      }
+    });
   } catch (err) {
     console.error('[Bridge] Failed to start:', err.message);
     started = false;

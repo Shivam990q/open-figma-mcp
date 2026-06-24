@@ -19,8 +19,9 @@
   },
   "scripts": {
     "start": "node src/server.js",
-    "test": "node tests/unit.test.js && node tests/integration.js",
+    "test": "node tests/unit.test.js && node tests/bridge.test.js && node tests/integration.js",
     "test:unit": "node tests/unit.test.js",
+    "test:bridge": "node tests/bridge.test.js",
     "test:integration": "node tests/integration.js",
     "prepublishOnly": "node tests/unit.test.js"
   },

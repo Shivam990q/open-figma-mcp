@@ -30,6 +30,9 @@ jobs:
       - name: Run unit tests
         run: npm run test:unit
 
+      - name: Run bridge tests
+        run: npm run test:bridge
+
       - name: Run integration tests
         run: npm run test:integration
 

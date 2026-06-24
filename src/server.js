@@ -1531,6 +1531,7 @@ if (stdioMode) {
       uptime: Math.round(process.uptime()),
       hasServerToken: !!globalToken,
       sessions: Object.keys(streamableTransports).length,
+      figmaPlugin: { connected: isPluginConnected(), bridge: noBridge ? 'disabled' : `ws://127.0.0.1:${bridgePort}` },
     });
   });
 
