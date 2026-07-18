@@ -11,7 +11,7 @@ No deployment needed. Point your client at the script:
 ```json
 { "mcpServers": { "open-figma-mcp": {
   "command": "npx",
-  "args": ["open-figma-mcp", "--stdio"],
+  "args": ["-y", "github:Shivam990q/open-figma-mcp#v1.4.0", "--stdio"],
   "env": { "FIGMA_API_KEY": "figd_YOUR_TOKEN" }
 }}}
 ```

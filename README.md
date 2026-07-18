@@ -1,7 +1,7 @@
 # OpenFigma MCP
 
 <p align="center">
-  <img src="https://img.shields.io/npm/v/open-figma-mcp?color=8b5cf6&label=npm" alt="npm version">
+  <img src="https://img.shields.io/github/v/release/Shivam990q/open-figma-mcp?color=8b5cf6&label=release" alt="GitHub release">
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license">
   <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen" alt="node version">
   <img src="https://img.shields.io/badge/MCP-compatible-0a7cff" alt="MCP compatible">
@@ -64,10 +64,14 @@ Prefer a UI? OpenFigma ships a stunning cross-platform desktop app (Electron + R
 cd desktop && npm install && npm run dev     # or build an installer: npm run dist
 ```
 
-### One-command (npx)
+### One-command (npx from GitHub)
 ```bash
-npx open-figma-mcp --figma-api-key figd_YOUR_TOKEN --stdio
+npx -y github:Shivam990q/open-figma-mcp#v1.4.0 --figma-api-key figd_YOUR_TOKEN --stdio
 ```
+
+> The npm registry name for this project is `openfigma-mcp`. Registry publication
+> is enabled when the maintainer configures the `NPM_TOKEN` repository secret;
+> the version-pinned GitHub command above works independently of the registry.
 
 ### Local clone
 ```bash

@@ -201,13 +201,13 @@ function hintFor(editor: Editor, transport: string, running: boolean): string {
   // stdio
   switch (editor) {
     case 'Cursor':
-      return 'stdio: add to .cursor/mcp.json. Requires the npm package (npm i -g open-figma-mcp).'
+      return 'stdio: add to .cursor/mcp.json. The generated config runs this repository directly through npx.'
     case 'VS Code':
-      return 'stdio: add to .vscode/mcp.json. Requires the npm package (npm i -g open-figma-mcp).'
+      return 'stdio: add to .vscode/mcp.json. The generated config runs this repository directly through npx.'
     case 'Claude':
-      return 'stdio: edit claude_desktop_config.json, then restart Claude. Requires the npm package.'
+      return 'stdio: edit claude_desktop_config.json, then restart Claude. The config runs this repository through npx.'
     case 'Windsurf':
-      return 'stdio: Settings → Cascade → MCP servers. Requires the npm package (npm i -g open-figma-mcp).'
+      return 'stdio: Settings → Cascade → MCP servers. The generated config runs this repository directly through npx.'
     default:
       return ''
   }
@@ -222,7 +222,7 @@ function ConfigBlock({ editor, transport, endpoint }: { editor: Editor; transpor
           mcpServers: {
             'open-figma-mcp': {
               command: 'npx',
-              args: ['-y', 'open-figma-mcp', '--stdio'],
+              args: ['-y', 'github:Shivam990q/open-figma-mcp#v1.4.0', '--stdio'],
               env: { FIGMA_API_KEY: 'figd_YOUR_TOKEN' }
             }
           }

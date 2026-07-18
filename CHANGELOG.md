@@ -44,6 +44,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **CI** now also typechecks and builds the desktop app.
 
 ### Fixed
+- **npm package identity** — changed the future registry package name to the
+  available `openfigma-mcp`; `open-figma-mcp` belongs to an unrelated project.
+  Until npm credentials are configured, one-command setup resolves this
+  repository directly through `npx github:Shivam990q/open-figma-mcp#v1.4.0`.
 - **Canvas bridge reliability** — reconnecting now hands off to one active plugin
   socket without stale disconnects rejecting new commands; bridge port conflicts
   report that this process cannot serve canvas tools instead of claiming otherwise.

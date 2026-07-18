@@ -22,6 +22,21 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      - run: npm publish --provenance --access public
+      - name: Detect npm credentials
+        id: npm-auth
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [[ -n "$NPM_TOKEN" ]]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Publish to npm
+        if: steps.npm-auth.outputs.present == 'true'
+        run: npm publish --provenance --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Report skipped npm publication
+        if: steps.npm-auth.outputs.present == 'false'
+        run: echo "::warning title=npm publication skipped::Configure the NPM_TOKEN repository secret before publishing openfigma-mcp to the npm registry."
