@@ -60,7 +60,6 @@
 
     <script>
       let ws = null;
-      let connected = false;
       let count = 0;
       const dot = document.getElementById('dot');
       const statusText = document.getElementById('statusText');
@@ -68,6 +67,35 @@
       const portInput = document.getElementById('port');
       const connectBtn = document.getElementById('connectBtn');
       let reconnectTimer = null;
+      const responseSockets = new Map(); // command id -> socket that received it
+      const retiringSockets = new Set();
+
+      function hasPendingResponses(socket) {
+        for (const owner of responseSockets.values()) {
+          if (owner === socket) return true;
+        }
+        return false;
+      }
+
+      function closeIfRetired(socket) {
+        if (!retiringSockets.has(socket) || hasPendingResponses(socket)) return;
+        retiringSockets.delete(socket);
+        socket.onclose = null;
+        if (socket.readyState === 0 || socket.readyState === 1) {
+          try { socket.close(1000, 'Reconnected'); } catch (e) {}
+        }
+      }
+
+      function retireSocket(socket) {
+        retiringSockets.add(socket);
+        closeIfRetired(socket);
+      }
+
+      function forgetSocketResponses(socket) {
+        for (const [id, owner] of responseSockets) {
+          if (owner === socket) responseSockets.delete(id);
+        }
+      }
 
       function setStatus(state, text) {
         dot.className = 'dot' + (state === 'on' ? ' on' : state === 'err' ? ' err' : '');
@@ -76,27 +104,67 @@
       }
 
       function connect() {
-        const port = (portInput.value || '3846').trim();
-        if (ws) { try { ws.close(); } catch (e) {} }
-        setStatus('', 'Connecting…');
-        try {
-          ws = new WebSocket('ws://127.0.0.1:' + port);
-        } catch (e) {
-          setStatus('err', 'Bad URL');
+        if (reconnectTimer) {
+          clearTimeout(reconnectTimer);
+          reconnectTimer = null;
+        }
+
+        const port = Number((portInput.value || '3846').trim());
+        if (!Number.isInteger(port) || port < 1 || port > 65535) {
+          if (ws && ws.readyState === 1) {
+            setStatus('on', 'Connected — invalid port ignored');
+          } else if (ws && ws.readyState === 0) {
+            setStatus('', 'Connecting — invalid port ignored');
+          } else {
+            setStatus('err', 'Invalid port');
+          }
           return;
         }
-        ws.onopen = () => { connected = true; setStatus('on', 'Connected'); };
-        ws.onclose = () => {
-          connected = false;
-          setStatus('err', 'Disconnected');
-          if (reconnectTimer) clearTimeout(reconnectTimer);
-          reconnectTimer = setTimeout(connect, 3000); // auto-retry
+
+        const previous = ws;
+        ws = null;
+        if (previous) retireSocket(previous);
+
+        setStatus('', 'Connecting…');
+        let socket;
+        try {
+          socket = new WebSocket('ws://127.0.0.1:' + port);
+        } catch (e) {
+          setStatus('err', 'Connection failed');
+          return;
+        }
+        ws = socket;
+
+        socket.onopen = () => {
+          if (ws !== socket) return;
+          setStatus('on', 'Connected');
         };
-        ws.onerror = () => { setStatus('err', 'Connection error'); };
-        ws.onmessage = (event) => {
+        socket.onclose = (event) => {
+          retiringSockets.delete(socket);
+          forgetSocketResponses(socket);
+          if (ws !== socket) return;
+          ws = null;
+          // The bridge uses 4001 when a newer plugin window takes ownership.
+          // Stay disconnected instead of competing in an endless reconnect loop.
+          if (event.code === 4001) {
+            setStatus('err', 'Replaced by another plugin');
+            return;
+          }
+          setStatus('err', 'Disconnected');
+          reconnectTimer = setTimeout(() => {
+            reconnectTimer = null;
+            connect();
+          }, 3000);
+        };
+        socket.onerror = () => {
+          if (ws === socket) setStatus('err', 'Connection error');
+        };
+        socket.onmessage = (event) => {
+          if (ws !== socket && !retiringSockets.has(socket)) return;
           let msg;
           try { msg = JSON.parse(event.data); } catch (e) { return; }
           if (msg.type === 'command') {
+            responseSockets.set(msg.id, socket);
             count++;
             countEl.textContent = count + ' cmds';
             // Relay to the plugin main thread for execution.
@@ -109,9 +177,13 @@
       // Responses from the plugin main thread → send back over the socket.
       window.onmessage = (event) => {
         const r = event.data && event.data.pluginMessage;
-        if (!r || !r.id) return;
-        if (!ws || ws.readyState !== 1) return;
-        ws.send(JSON.stringify(r.ok ? { type: 'result', id: r.id, result: r.result } : { type: 'error', id: r.id, error: r.error }));
+        if (!r || r.id == null) return;
+        const responseSocket = responseSockets.get(r.id) || ws;
+        responseSockets.delete(r.id);
+        if (responseSocket && responseSocket.readyState === 1) {
+          responseSocket.send(JSON.stringify(r.ok ? { type: 'result', id: r.id, result: r.result } : { type: 'error', id: r.id, error: r.error }));
+        }
+        if (responseSocket) closeIfRetired(responseSocket);
       };
 
       connectBtn.onclick = connect;

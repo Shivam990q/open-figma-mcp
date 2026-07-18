@@ -111,7 +111,7 @@ quick start + visual hierarchy" converts visitors 3–5×):
 ## 5. Launch sequence
 
 **Week 0 — soft launch**
-1. Publish v1.3.0 to npm. Tag a GitHub Release (fires the publish workflow).
+1. Publish v1.4.0 to npm. Tag a GitHub Release (fires the publish workflow).
 2. List on the MCP directories above. These send steady, high-intent traffic.
 3. Ask 5–10 friendly devs to try the quick start and (honestly) star.
 

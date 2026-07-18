@@ -463,10 +463,11 @@ async function runTests() {
     console.log('\n✅ All integration tests passed successfully!');
   } catch (err) {
     console.error('\n❌ Test failed:', err.message);
+    process.exitCode = 1;
   } finally {
-    // Shutdown the server process
+    // Shutdown the server process. Preserve a failing exit code so CI and the
+    // prepublish gate cannot report a broken integration run as successful.
     server.kill();
-    process.exit(0);
   }
 }
 

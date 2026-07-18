@@ -1,9 +1,8 @@
 # OpenFigma MCP vs. Official Figma Dev Mode MCP
 
-A grounded, honest comparison (sources: Figma developer docs + Figma blog, early 2026).
-The goal: be the server people reach for *instead of* the official one for the
-**design-to-code** workflow — while being honest about the one thing only Figma's
-first-party server can do (write to the canvas).
+A grounded comparison (sources: Figma developer docs + Figma blog, early 2026).
+The goal is to show where each server fits the **design-to-code** workflow,
+including their different access, deployment, and canvas-write models.
 
 ## Capability matrix
 
@@ -37,8 +36,8 @@ API alone can't do this — so OpenFigma ships a **free companion Figma plugin**
 that runs inside Figma (full Plugin API access) and connects to the MCP server
 over a local WebSocket bridge. With it open, agents can `create_frame`,
 `create_text`, `create_rectangle`, `set_fill_color`, `move/resize/clone/delete`
-nodes, and read the live selection — real writes, same mechanism the official
-server uses internally.
+nodes, and read the live selection — real writes using Figma's supported Plugin
+API rather than pretending the read-only REST API can mutate documents.
 
 When the plugin **isn't** connected, those tools return a structured
 `supported:false` (never fabricated success). File-level operations

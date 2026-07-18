@@ -10,11 +10,16 @@ figma.showUI(__html__, { width: 340, height: 260, title: 'OpenFigma Bridge' });
 
 function hexToRgba(hex) {
   if (typeof hex !== 'string') return null;
-  let h = hex.replace('#', '').trim();
-  if (h.length === 3) h = h.split('').map((c) => c + c).join('');
+  let h = hex.trim().replace(/^#/, '');
+  if (h.length === 3 || h.length === 4) {
+    h = h.split('').map((c) => c + c).join('');
+  }
+  if (!/^[0-9a-fA-F]{6}([0-9a-fA-F]{2})?$/.test(h)) return null;
   let a = 1;
-  if (h.length === 8) { a = parseInt(h.slice(6, 8), 16) / 255; h = h.slice(0, 6); }
-  if (h.length !== 6) return null;
+  if (h.length === 8) {
+    a = parseInt(h.slice(6, 8), 16) / 255;
+    h = h.slice(0, 6);
+  }
   return {
     r: parseInt(h.slice(0, 2), 16) / 255,
     g: parseInt(h.slice(2, 4), 16) / 255,
@@ -27,6 +32,14 @@ function solidPaint(hex) {
   const c = hexToRgba(hex);
   if (!c) return null;
   return { type: 'SOLID', color: { r: c.r, g: c.g, b: c.b }, opacity: c.a };
+}
+
+function requirePaint(hex, label) {
+  const paint = solidPaint(hex);
+  if (!paint) {
+    throw new Error('Invalid ' + label + ': ' + hex + '. Use #RGB, #RGBA, #RRGGBB, or #RRGGBBAA.');
+  }
+  return paint;
 }
 
 function serialize(node) {
@@ -44,14 +57,69 @@ async function getNode(id) {
 }
 
 async function appendTo(node, parentId) {
-  if (parentId) {
-    const parent = await figma.getNodeByIdAsync(parentId);
-    if (parent && 'appendChild' in parent) {
-      parent.appendChild(node);
+  try {
+    if (!parentId) {
+      figma.currentPage.appendChild(node);
       return;
     }
+    const parent = await getNode(parentId);
+    if (typeof parent.appendChild !== 'function') {
+      throw new Error('Node ' + parentId + ' cannot contain child nodes');
+    }
+    parent.appendChild(node);
+  } catch (error) {
+    // Figma create* calls insert new nodes on the current page immediately.
+    // Roll them back when the requested parent is invalid instead of returning
+    // an error while leaving an unintended node behind.
+    if (typeof node.remove === 'function') node.remove();
+    throw error;
   }
-  figma.currentPage.appendChild(node);
+}
+
+const INTER_STYLES = {
+  100: 'Thin',
+  200: 'Extra Light',
+  300: 'Light',
+  400: 'Regular',
+  500: 'Medium',
+  600: 'Semi Bold',
+  700: 'Bold',
+  800: 'Extra Bold',
+  900: 'Black'
+};
+
+async function loadInterFont(weight) {
+  const requested = {
+    family: 'Inter',
+    style: INTER_STYLES[weight] || (weight >= 700 ? 'Bold' : 'Regular')
+  };
+  try {
+    await figma.loadFontAsync(requested);
+    return requested;
+  } catch (e) {
+    const fallback = { family: 'Inter', style: 'Regular' };
+    await figma.loadFontAsync(fallback);
+    return fallback;
+  }
+}
+
+async function loadTextNodeFonts(node) {
+  let fonts = [];
+  if (node.characters.length > 0 && typeof node.getRangeAllFontNames === 'function') {
+    fonts = node.getRangeAllFontNames(0, node.characters.length);
+  } else if (node.fontName && node.fontName !== figma.mixed) {
+    fonts = [node.fontName];
+  }
+  if (fonts.length === 0) fonts = [{ family: 'Inter', style: 'Regular' }];
+
+  const loaded = new Set();
+  for (const font of fonts) {
+    const key = font.family + '\u0000' + font.style;
+    if (!loaded.has(key)) {
+      await figma.loadFontAsync(font);
+      loaded.add(key);
+    }
+  }
 }
 
 async function handle(command, p) {
@@ -69,12 +137,12 @@ async function handle(command, p) {
       return { selection: figma.currentPage.selection.map(serialize) };
 
     case 'create_frame': {
+      const paint = p.fillColor == null ? null : requirePaint(p.fillColor, 'fill color');
       const f = figma.createFrame();
-      f.x = p.x || 0;
-      f.y = p.y || 0;
-      f.resize(p.width || 400, p.height || 300);
+      f.x = p.x ?? 0;
+      f.y = p.y ?? 0;
+      f.resize(p.width ?? 400, p.height ?? 300);
       if (p.name) f.name = p.name;
-      const paint = p.fillColor ? solidPaint(p.fillColor) : null;
       if (paint) f.fills = [paint];
       if (p.layoutMode && p.layoutMode !== 'NONE') {
         f.layoutMode = p.layoutMode;
@@ -88,12 +156,12 @@ async function handle(command, p) {
     }
 
     case 'create_rectangle': {
+      const paint = p.fillColor == null ? null : requirePaint(p.fillColor, 'fill color');
       const r = figma.createRectangle();
-      r.x = p.x || 0;
-      r.y = p.y || 0;
-      r.resize(p.width || 100, p.height || 100);
+      r.x = p.x ?? 0;
+      r.y = p.y ?? 0;
+      r.resize(p.width ?? 100, p.height ?? 100);
       if (p.name) r.name = p.name;
-      const paint = p.fillColor ? solidPaint(p.fillColor) : null;
       if (paint) r.fills = [paint];
       if (p.cornerRadius != null) r.cornerRadius = p.cornerRadius;
       await appendTo(r, p.parentId);
@@ -101,21 +169,15 @@ async function handle(command, p) {
     }
 
     case 'create_text': {
-      const family = 'Inter';
-      const style = p.fontWeight && p.fontWeight >= 700 ? 'Bold' : 'Regular';
-      try {
-        await figma.loadFontAsync({ family, style });
-      } catch (e) {
-        await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
-      }
+      const fontName = await loadInterFont(p.fontWeight ?? 400);
+      const paint = p.color == null ? null : requirePaint(p.color, 'text color');
       const t = figma.createText();
-      t.fontName = { family, style };
+      t.fontName = fontName;
       t.characters = String(p.text == null ? '' : p.text);
-      if (p.fontSize) t.fontSize = p.fontSize;
-      t.x = p.x || 0;
-      t.y = p.y || 0;
+      if (p.fontSize != null) t.fontSize = p.fontSize;
+      t.x = p.x ?? 0;
+      t.y = p.y ?? 0;
       if (p.name) t.name = p.name;
-      const paint = p.color ? solidPaint(p.color) : null;
       if (paint) t.fills = [paint];
       await appendTo(t, p.parentId);
       return serialize(t);
@@ -123,10 +185,8 @@ async function handle(command, p) {
 
     case 'set_fill_color': {
       const n = await getNode(p.nodeId);
-      const paint = solidPaint(p.color);
-      if (!paint) throw new Error('Invalid color: ' + p.color);
       if (!('fills' in n)) throw new Error('Node does not support fills');
-      n.fills = [paint];
+      n.fills = [requirePaint(p.color, 'fill color')];
       return serialize(n);
     }
 
@@ -140,7 +200,7 @@ async function handle(command, p) {
     case 'set_text': {
       const n = await getNode(p.nodeId);
       if (n.type !== 'TEXT') throw new Error('Node is not a text node');
-      try { await figma.loadFontAsync(n.fontName); } catch (e) { await figma.loadFontAsync({ family: 'Inter', style: 'Regular' }); }
+      await loadTextNodeFonts(n);
       n.characters = String(p.text == null ? '' : p.text);
       return serialize(n);
     }
@@ -154,13 +214,14 @@ async function handle(command, p) {
 
     case 'resize_node': {
       const n = await getNode(p.nodeId);
-      if (!('resize' in n)) throw new Error('Node cannot be resized');
+      if (typeof n.resize !== 'function') throw new Error('Node cannot be resized');
       n.resize(p.width, p.height);
       return serialize(n);
     }
 
     case 'clone_node': {
       const n = await getNode(p.nodeId);
+      if (typeof n.clone !== 'function') throw new Error('Node cannot be cloned');
       const c = n.clone();
       if (p.x != null) c.x = p.x;
       if (p.y != null) c.y = p.y;
@@ -169,6 +230,7 @@ async function handle(command, p) {
 
     case 'delete_node': {
       const n = await getNode(p.nodeId);
+      if (typeof n.remove !== 'function') throw new Error('Node cannot be deleted');
       const id = n.id;
       n.remove();
       return { deleted: id };
@@ -176,10 +238,8 @@ async function handle(command, p) {
 
     case 'set_stroke_color': {
       const n = await getNode(p.nodeId);
-      const paint = solidPaint(p.color);
-      if (!paint) throw new Error('Invalid color: ' + p.color);
       if (!('strokes' in n)) throw new Error('Node does not support strokes');
-      n.strokes = [paint];
+      n.strokes = [requirePaint(p.color, 'stroke color')];
       if (p.strokeWeight != null && 'strokeWeight' in n) n.strokeWeight = p.strokeWeight;
       return serialize(n);
     }
@@ -194,13 +254,14 @@ async function handle(command, p) {
     case 'add_drop_shadow': {
       const n = await getNode(p.nodeId);
       if (!('effects' in n)) throw new Error('Node does not support effects');
-      const c = hexToRgba(p.color || '#00000040') || { r: 0, g: 0, b: 0, a: 0.25 };
+      const c = hexToRgba(p.color ?? '#00000040');
+      if (!c) throw new Error('Invalid shadow color: ' + p.color);
       const shadow = {
         type: 'DROP_SHADOW',
         color: { r: c.r, g: c.g, b: c.b, a: c.a },
-        offset: { x: p.offsetX || 0, y: p.offsetY != null ? p.offsetY : 4 },
-        radius: p.radius != null ? p.radius : 8,
-        spread: p.spread || 0,
+        offset: { x: p.offsetX ?? 0, y: p.offsetY ?? 4 },
+        radius: p.radius ?? 8,
+        spread: p.spread ?? 0,
         visible: true,
         blendMode: 'NORMAL'
       };
@@ -209,18 +270,21 @@ async function handle(command, p) {
     }
 
     case 'create_ellipse': {
+      const paint = p.fillColor == null ? null : requirePaint(p.fillColor, 'fill color');
       const e = figma.createEllipse();
-      e.x = p.x || 0;
-      e.y = p.y || 0;
-      e.resize(p.width || 100, p.height || 100);
+      e.x = p.x ?? 0;
+      e.y = p.y ?? 0;
+      e.resize(p.width ?? 100, p.height ?? 100);
       if (p.name) e.name = p.name;
-      const paint = p.fillColor ? solidPaint(p.fillColor) : null;
       if (paint) e.fills = [paint];
       await appendTo(e, p.parentId);
       return serialize(e);
     }
 
     case 'create_component_from_node': {
+      if (typeof figma.createComponentFromNode !== 'function') {
+        throw new Error('Creating components is not supported in this Figma editor');
+      }
       const n = await getNode(p.nodeId);
       const comp = figma.createComponentFromNode(n);
       if (p.name) comp.name = p.name;
@@ -229,7 +293,9 @@ async function handle(command, p) {
 
     case 'create_instance': {
       const comp = await getNode(p.componentId);
-      if (comp.type !== 'COMPONENT') throw new Error('Node ' + p.componentId + ' is not a COMPONENT');
+      if (comp.type !== 'COMPONENT' || typeof comp.createInstance !== 'function') {
+        throw new Error('Node ' + p.componentId + ' is not a COMPONENT');
+      }
       const inst = comp.createInstance();
       if (p.x != null) inst.x = p.x;
       if (p.y != null) inst.y = p.y;
@@ -240,7 +306,7 @@ async function handle(command, p) {
     case 'set_auto_layout': {
       const n = await getNode(p.nodeId);
       if (!('layoutMode' in n)) throw new Error('Node does not support auto-layout');
-      n.layoutMode = p.mode || 'VERTICAL';
+      n.layoutMode = p.mode ?? 'VERTICAL';
       if (p.itemSpacing != null) n.itemSpacing = p.itemSpacing;
       if (p.padding != null) {
         n.paddingTop = n.paddingBottom = n.paddingLeft = n.paddingRight = p.padding;
@@ -251,11 +317,15 @@ async function handle(command, p) {
     }
 
     case 'group_nodes': {
-      const ids = p.nodeIds || [];
+      const ids = Array.isArray(p.nodeIds) ? p.nodeIds : [];
+      if (ids.length === 0) throw new Error('No nodes to group');
       const nodes = [];
       for (const id of ids) nodes.push(await getNode(id));
-      if (!nodes.length) throw new Error('No nodes to group');
-      const group = figma.group(nodes, nodes[0].parent || figma.currentPage);
+      const parent = nodes[0].parent || figma.currentPage;
+      if (nodes.some((node) => node.parent !== nodes[0].parent)) {
+        throw new Error('All nodes must have the same parent to be grouped');
+      }
+      const group = figma.group(nodes, parent);
       if (p.name) group.name = p.name;
       return serialize(group);
     }
@@ -279,8 +349,15 @@ async function handle(command, p) {
     case 'set_image_fill': {
       const n = await getNode(p.nodeId);
       if (!('fills' in n)) throw new Error('Node does not support fills');
+      if (typeof p.imageUrl !== 'string' || !/^https?:\/\//i.test(p.imageUrl)) {
+        throw new Error('imageUrl must be an absolute HTTP(S) URL');
+      }
+      const scaleMode = p.scaleMode ?? 'FILL';
+      if (!['FILL', 'FIT', 'CROP', 'TILE'].includes(scaleMode)) {
+        throw new Error('Invalid image scale mode: ' + scaleMode);
+      }
       const image = await figma.createImageAsync(p.imageUrl);
-      n.fills = [{ type: 'IMAGE', imageHash: image.hash, scaleMode: p.scaleMode || 'FILL' }];
+      n.fills = [{ type: 'IMAGE', imageHash: image.hash, scaleMode }];
       return serialize(n);
     }
 

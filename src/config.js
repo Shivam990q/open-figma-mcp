@@ -13,7 +13,7 @@
 import dotenv from 'dotenv';
 import { detectImageDir } from './detector.js';
 
-export const VERSION = '1.3.0';
+export const VERSION = '1.4.0';
 export const VALID_FORMATS = ['yaml', 'json', 'tree'];
 export const DEFAULT_PORT = 3845; // Lovable Desktop autodetect port (override with --port/FRAMELINK_PORT)
 export const DEFAULT_HOST = '127.0.0.1';
