@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license">
   <img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen" alt="node version">
   <img src="https://img.shields.io/badge/MCP-compatible-0a7cff" alt="MCP compatible">
-  <img src="https://img.shields.io/badge/tests-167%20passing-success" alt="tests">
+  <img src="https://img.shields.io/badge/tests-176%20unit%20%2B%207%20bridge-passing-success" alt="tests">
   <img src="https://img.shields.io/badge/telemetry-none-blueviolet" alt="no telemetry">
   <img src="https://img.shields.io/badge/PRs-welcome-ff69b4" alt="PRs welcome">
 </p>
@@ -37,7 +37,7 @@ OpenFigma is the only free Figma MCP that does **all** of these — several of w
 | Localhost asset serving | ✅ | ❌ | ❌ | ✅ |
 | **Honest about what it can't do** (no fake "success") | ✅ | — | — | — |
 
-> 📊 See **[COMPARISON.md](COMPARISON.md)** for a full, honest feature-by-feature breakdown vs. the **official Figma Dev Mode MCP** — including the one thing only Figma's first-party server can do (write to the canvas).
+> 📊 See **[COMPARISON.md](COMPARISON.md)** for a feature-by-feature breakdown against the **official Figma Dev Mode MCP**, including access, context efficiency, code generation, and the different canvas-write paths.
 
 ## 🚀 Core features
 

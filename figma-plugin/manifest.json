@@ -8,6 +8,6 @@
   "documentAccess": "dynamic-page",
   "networkAccess": {
     "allowedDomains": ["*"],
-    "reasoning": "Connects to the local OpenFigma MCP WebSocket bridge (ws://127.0.0.1:3846) so an AI agent can read and modify this file via the MCP server."
+    "reasoning": "Connects to the local OpenFigma MCP WebSocket bridge (ws://127.0.0.1:3846) and, when set_image_fill is used, fetches the image URL explicitly supplied to that tool."
   }
 }

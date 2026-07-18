@@ -5,9 +5,13 @@ All notable changes to this project are documented here. The format is based on
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-## [Unreleased]
+
+## [1.4.0] - 2026-07-19
 
 ### Added
+- **Published Figma companion plugin** — `figma-plugin/` is now included in the
+  npm package and desktop-app resources, so every distribution contains the
+  manifest and runtime needed for live canvas tools.
 - **Complete canvas toolset** — added `create_ellipse`, `create_component_from_node`,
   `create_instance`, `set_stroke_color`, `set_opacity`, `add_drop_shadow`,
   `set_image_fill` (image-from-URL), `set_auto_layout`, `group_nodes`, `set_name`,
@@ -40,6 +44,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **CI** now also typechecks and builds the desktop app.
 
 ### Fixed
+- **Canvas bridge reliability** — reconnecting now hands off to one active plugin
+  socket without stale disconnects rejecting new commands; bridge port conflicts
+  report that this process cannot serve canvas tools instead of claiming otherwise.
+- **Canvas input safety** — invalid colors, dimensions, image URLs, group inputs,
+  and parent targets now fail clearly; failed parent placement rolls back newly
+  created nodes instead of silently leaving them on the current page.
+- **Release validation** — `prepublishOnly` runs the full test suite, and integration
+  failures now produce a non-zero exit code instead of being reported as success.
 - **Rate-limit UX**: on a 429/error, the server now serves a cached copy
   *immediately* (one short attempt) instead of waiting through ~17s of backoff —
   which previously caused client-side tool timeouts (e.g. in Lovable). Verified:

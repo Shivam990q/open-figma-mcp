@@ -1,6 +1,6 @@
 {
   "name": "open-figma-mcp",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Universal Figma MCP server — pulls simplified design data, design tokens (8 formats), and multi-framework code (React/Vue/Svelte/Angular/HTML/Flutter/SwiftUI) into AI coding agents without a paid Figma Dev Mode seat. Free PAT, no telemetry.",
   "main": "src/server.js",
   "type": "module",
@@ -10,6 +10,7 @@
   "files": [
     "src/",
     "bin/",
+    "figma-plugin/",
     "README.md",
     "LICENSE",
     "CHANGELOG.md"
@@ -23,7 +24,7 @@
     "test:unit": "node tests/unit.test.js",
     "test:bridge": "node tests/bridge.test.js",
     "test:integration": "node tests/integration.js",
-    "prepublishOnly": "node tests/unit.test.js"
+    "prepublishOnly": "npm test"
   },
   "keywords": [
     "figma",

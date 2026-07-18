@@ -987,14 +987,14 @@ server.tool(
   {
     x: z.number().optional().default(0),
     y: z.number().optional().default(0),
-    width: z.number().optional().default(400),
-    height: z.number().optional().default(300),
+    width: z.number().positive().optional().default(400),
+    height: z.number().positive().optional().default(300),
     name: z.string().optional().describe('Frame name'),
     parentId: z.string().optional().describe('Optional parent node id to append into'),
     fillColor: z.string().optional().describe('Background hex, e.g. #ffffff'),
     layoutMode: z.enum(['NONE', 'HORIZONTAL', 'VERTICAL']).optional().describe('Auto-layout mode'),
     itemSpacing: z.number().optional(),
-    padding: z.number().optional().describe('Uniform padding when auto-layout is set'),
+    padding: z.number().nonnegative().optional().describe('Uniform padding when auto-layout is set'),
   },
   async (a) => pluginCall('create_frame', a),
 );
@@ -1005,12 +1005,12 @@ server.tool(
   {
     x: z.number().optional().default(0),
     y: z.number().optional().default(0),
-    width: z.number().optional().default(100),
-    height: z.number().optional().default(100),
+    width: z.number().positive().optional().default(100),
+    height: z.number().positive().optional().default(100),
     name: z.string().optional(),
     parentId: z.string().optional(),
     fillColor: z.string().optional().describe('Hex fill, e.g. #3b82f6'),
-    cornerRadius: z.number().optional(),
+    cornerRadius: z.number().nonnegative().optional(),
   },
   async (a) => pluginCall('create_rectangle', a),
 );
@@ -1022,8 +1022,8 @@ server.tool(
     x: z.number().optional().default(0),
     y: z.number().optional().default(0),
     text: z.string().describe('The text content'),
-    fontSize: z.number().optional().default(16),
-    fontWeight: z.number().optional().describe('400, 500, 700, ...'),
+    fontSize: z.number().positive().optional().default(16),
+    fontWeight: z.number().int().min(100).max(900).multipleOf(100).optional().describe('100–900 in increments of 100'),
     color: z.string().optional().describe('Text color hex'),
     name: z.string().optional(),
     parentId: z.string().optional(),
@@ -1041,7 +1041,7 @@ server.tool(
 server.tool(
   'set_corner_radius',
   'Set the corner radius of a node (via the plugin).',
-  { nodeId: z.string(), radius: z.number() },
+  { nodeId: z.string(), radius: z.number().nonnegative() },
   async (a) => pluginCall('set_corner_radius', a),
 );
 
@@ -1062,7 +1062,7 @@ server.tool(
 server.tool(
   'resize_node',
   'Resize a node (via the plugin).',
-  { nodeId: z.string(), width: z.number(), height: z.number() },
+  { nodeId: z.string(), width: z.number().positive(), height: z.number().positive() },
   async (a) => pluginCall('resize_node', a),
 );
 
@@ -1083,7 +1083,7 @@ server.tool(
 server.tool(
   'set_stroke_color',
   'Set a node\'s stroke (border) color and optional weight (via the plugin).',
-  { nodeId: z.string(), color: z.string().describe('Hex'), strokeWeight: z.number().optional() },
+  { nodeId: z.string(), color: z.string().describe('Hex'), strokeWeight: z.number().nonnegative().optional() },
   async (a) => pluginCall('set_stroke_color', a),
 );
 
@@ -1102,7 +1102,7 @@ server.tool(
     color: z.string().optional().describe('Shadow hex incl. alpha, e.g. #00000040'),
     offsetX: z.number().optional(),
     offsetY: z.number().optional(),
-    radius: z.number().optional(),
+    radius: z.number().nonnegative().optional(),
     spread: z.number().optional(),
   },
   async (a) => pluginCall('add_drop_shadow', a),
@@ -1114,8 +1114,8 @@ server.tool(
   {
     x: z.number().optional().default(0),
     y: z.number().optional().default(0),
-    width: z.number().optional().default(100),
-    height: z.number().optional().default(100),
+    width: z.number().positive().optional().default(100),
+    height: z.number().positive().optional().default(100),
     name: z.string().optional(),
     parentId: z.string().optional(),
     fillColor: z.string().optional(),
@@ -1149,7 +1149,7 @@ server.tool(
     nodeId: z.string(),
     mode: z.enum(['HORIZONTAL', 'VERTICAL']).optional().default('VERTICAL'),
     itemSpacing: z.number().optional(),
-    padding: z.number().optional(),
+    padding: z.number().nonnegative().optional(),
     primaryAxisAlignItems: z.enum(['MIN', 'CENTER', 'MAX', 'SPACE_BETWEEN']).optional(),
     counterAxisAlignItems: z.enum(['MIN', 'CENTER', 'MAX', 'BASELINE']).optional(),
   },
@@ -1159,7 +1159,7 @@ server.tool(
 server.tool(
   'group_nodes',
   'Group multiple nodes (via the plugin).',
-  { nodeIds: z.array(z.string()), name: z.string().optional() },
+  { nodeIds: z.array(z.string()).min(1), name: z.string().optional() },
   async (a) => pluginCall('group_nodes', a),
 );
 
@@ -1180,7 +1180,11 @@ server.tool(
 server.tool(
   'set_image_fill',
   'Fill a node with an image from a URL (uses figma.createImageAsync — no render quota). Closes the asset-upload gap.',
-  { nodeId: z.string(), imageUrl: z.string().describe('Image URL to fetch and place'), scaleMode: z.enum(['FILL', 'FIT', 'CROP', 'TILE']).optional() },
+  {
+    nodeId: z.string(),
+    imageUrl: z.string().url().refine((url) => /^https?:\/\//i.test(url), 'Image URL must use HTTP or HTTPS').describe('Image URL to fetch and place'),
+    scaleMode: z.enum(['FILL', 'FIT', 'CROP', 'TILE']).optional(),
+  },
   async (a) => pluginCall('set_image_fill', a),
 );
 
