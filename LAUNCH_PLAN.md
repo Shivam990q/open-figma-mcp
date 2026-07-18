@@ -74,7 +74,7 @@ quick start + visual hierarchy" converts visitors 3–5×):
 | --- | --- |
 | **Instant comprehension** | Answer-first README hook + a comparison table above the fold |
 | **Visual appeal** | Badges; add a demo GIF (see §6 — still TODO) |
-| **5-minute quick start** | `npx open-figma-mcp ... --stdio` one-liner up top |
+| **5-minute quick start** | `npx -y github:Shivam990q/open-figma-mcp#v1.4.0 ... --stdio` one-liner up top |
 | **Credibility** | CI badge, passing tests, MIT license, CHANGELOG, CoC |
 | **"It solves *my* problem"** | The token-bloat hook speaks to a felt pain |
 | **Low adoption risk** | Drop-in superset of Framelink; same `get_figma_data` |
@@ -92,7 +92,7 @@ quick start + visual hierarchy" converts visitors 3–5×):
 - [x] GitHub Actions CI (matrix: Node 18/20/22 × Linux/macOS/Windows) + publish workflow
 - [x] README badges + token-bloat hook + 8-framework matrix
 - [x] Full npm metadata in `package.json` (keywords, repo, engines, files)
-- [x] 167 passing unit tests + integration test
+- [x] 176 passing unit tests + 7 bridge tests + integration test
 
 **Do before you announce:**
 - [ ] Add a **demo GIF/video** to the top of the README (record an agent in
@@ -102,7 +102,8 @@ quick start + visual hierarchy" converts visitors 3–5×):
       `model-context-protocol`, `design-to-code`, `ai`, `cursor`, `claude`,
       `design-tokens`, `codegen`.
 - [ ] Pin a "Star if this saved you tokens 🌟" note.
-- [ ] Publish to npm (`npm publish`) so the npm badge resolves and `npx` works.
+- [ ] Configure `NPM_TOKEN` and publish `openfigma-mcp`; the version-pinned
+      GitHub `npx` command already works without the registry.
 - [ ] Submit to MCP directories: the official MCP servers list,
       `mcp.so`, `glama.ai/mcp`, `smithery.ai`, PulseMCP, Cursor Directory.
 
@@ -111,7 +112,8 @@ quick start + visual hierarchy" converts visitors 3–5×):
 ## 5. Launch sequence
 
 **Week 0 — soft launch**
-1. Publish v1.4.0 to npm. Tag a GitHub Release (fires the publish workflow).
+1. Publish the v1.4.0 GitHub Release; configure npm publishing for the available
+   `openfigma-mcp` package name when maintainer credentials are ready.
 2. List on the MCP directories above. These send steady, high-intent traffic.
 3. Ask 5–10 friendly devs to try the quick start and (honestly) star.
 
