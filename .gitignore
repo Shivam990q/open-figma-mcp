@@ -25,3 +25,17 @@ Thumbs.db
 dist/
 build/
 coverage/
+
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.exe
+*.zip
+*.dll
+*.wpress
+ai1wm-backups/
+
+# Auto-ignored large files (>30MB)
+/desktop/release/OpenFigma MCP Setup 1.4.0.exe
+/desktop/release/win-unpacked/OpenFigma MCP.exe
