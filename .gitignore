@@ -28,3 +28,7 @@ __pycache__/
 .vscode/
 .idea/
 *.swp
+
+# Research Vault Cloned Repositories
+research_ecosystem/repos/
+
