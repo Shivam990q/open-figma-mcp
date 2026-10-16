@@ -102,3 +102,36 @@ class OpenFigmaClient:
 
     def audit(self, url: str) -> str:
         return self.call_tool("audit_accessibility_and_security", {"url": url})
+
+    def create_frame(self, name: str, width: float = 400.0, height: float = 300.0, x: float = 0.0, y: float = 0.0, background_color: str = "#FFFFFF") -> str:
+        return self.call_tool("canvas_create_frame", {
+            "name": name,
+            "width": width,
+            "height": height,
+            "x": x,
+            "y": y,
+            "background_color": background_color,
+        })
+
+    def create_text(self, text: str, font_size: float = 16.0, x: float = 0.0, y: float = 0.0, color: str = "#000000") -> str:
+        return self.call_tool("canvas_create_text", {
+            "text": text,
+            "font_size": font_size,
+            "x": x,
+            "y": y,
+            "color": color,
+        })
+
+    def create_rectangle(self, width: float = 100.0, height: float = 100.0, x: float = 0.0, y: float = 0.0, fill_color: str = "#3B82F6", corner_radius: float = 8.0) -> str:
+        return self.call_tool("canvas_create_rectangle", {
+            "width": width,
+            "height": height,
+            "x": x,
+            "y": y,
+            "fill_color": fill_color,
+            "corner_radius": corner_radius,
+        })
+
+    def insert_code(self, code: str, x: float = 0.0, y: float = 0.0) -> str:
+        return self.call_tool("canvas_insert_code", {"code": code, "x": x, "y": y})
+

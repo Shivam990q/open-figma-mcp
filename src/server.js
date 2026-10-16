@@ -239,6 +239,31 @@ const TOOLS = [
     },
   },
   {
+    name: 'canvas_create_rectangle',
+    description: 'Creates a rectangle shape on the active Figma canvas via companion plugin.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        width: { type: 'number' },
+        height: { type: 'number' },
+        cornerRadius: { type: 'number' },
+      },
+      required: ['name', 'width', 'height'],
+    },
+  },
+  {
+    name: 'canvas_insert_code',
+    description: 'Transpiles HTML / JSX / Tailwind code and immediately instantiates it as native layers on the live Figma canvas.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        code: { type: 'string', description: 'HTML, JSX, or Tailwind snippet to draw on canvas' },
+      },
+      required: ['code'],
+    },
+  },
+  {
     name: 'capabilities',
     description: 'Returns active server capabilities, runtime mode, and companion plugin bridge status.',
     inputSchema: {
@@ -322,6 +347,16 @@ async function handleToolCall(name, args, reqApiKey) {
 
   if (name === 'canvas_create_text') {
     const res = await canvas.createText(args);
+    return JSON.stringify(res, null, 2);
+  }
+
+  if (name === 'canvas_create_rectangle') {
+    const res = await canvas.createRectangle(args);
+    return JSON.stringify(res, null, 2);
+  }
+
+  if (name === 'canvas_insert_code') {
+    const res = await canvas.insertCode(args.code);
     return JSON.stringify(res, null, 2);
   }
 

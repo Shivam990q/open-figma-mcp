@@ -21,6 +21,17 @@ class TestOpenFigmaSdk(unittest.TestCase):
         self.assertIsNotNone(tool.generate_ui_code)
         self.assertIsNotNone(tool.render_svg_vector)
         self.assertIsNotNone(tool.audit_security_and_a11y)
+        self.assertIsNotNone(tool.transpile_html_to_canvas)
+        self.assertIsNotNone(tool.insert_component_to_canvas)
+        self.assertIsNotNone(tool.create_canvas_shape)
+
+    def test_client_canvas_methods_exist(self):
+        client = OpenFigmaClient()
+        self.assertTrue(hasattr(client, "create_frame"))
+        self.assertTrue(hasattr(client, "create_text"))
+        self.assertTrue(hasattr(client, "create_rectangle"))
+        self.assertTrue(hasattr(client, "insert_code"))
+
 
 if __name__ == "__main__":
     unittest.main()

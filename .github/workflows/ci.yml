@@ -34,3 +34,24 @@ jobs:
           node-version: 22
       - run: npm install
       - run: npm test
+
+  test-sdks:
+    name: SDK Test Suite (Python & TypeScript)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install Python SDK Deps
+        run: |
+          pip install httpx
+          python sdk/python/test_client.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test TypeScript SDK
+        run: |
+          cd sdk/typescript
+          node --test test/*.test.js
+

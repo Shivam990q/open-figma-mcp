@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license">
   <img src="https://img.shields.io/badge/engine-Rust%20SIMD%20%2B%20Kiwi%20%2B%20Taffy-orange" alt="Rust Engine">
   <img src="https://img.shields.io/badge/MCP-compatible-0a7cff" alt="MCP compatible">
-  <img src="https://img.shields.io/badge/tests-38%20passing%20(Rust%20%2B%20Node%20%2B%20Python)-success" alt="tests">
+  <img src="https://img.shields.io/badge/tests-50%20passing%20(Rust%20%2B%20Node%20%2B%20Python%20%2B%20TS)-success" alt="tests">
   <img src="https://img.shields.io/badge/observability-Prometheus%20%2B%20OTel-blueviolet" alt="observability">
 </p>
 
@@ -187,15 +187,22 @@ To enable live canvas mutations (creating frames, writing text, and editing comp
 
 ---
 
-## 🧪 Comprehensive Test Suites
+## 🧪 Comprehensive Multi-Runtime Test Suites
 
 ```bash
-# Run Rust unit & integration tests (24 passed)
+# Run native Rust unit & CLI integration tests (27 passed)
 cargo test --workspace
 
-# Run Node.js enterprise tests (14 passed)
+# Run Node.js enterprise engine & canvas tests (18 passed)
 npm test
 
-# Run Python SDK tests (2 passed)
-python -m unittest sdk/python/test_client.py
+# Run TypeScript SDK tests (2 passed)
+npm run test:sdk:ts
+
+# Run Python SDK tests (3 passed)
+python sdk/python/test_client.py
+
+# Run all suites simultaneously (50 tests, 0 failures)
+npm run test:all
 ```
+

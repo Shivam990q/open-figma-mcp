@@ -84,6 +84,26 @@ export class OpenFigmaClient {
     return await this.callTool('audit_accessibility_and_security', { url });
   }
 
+  async createFrame(name, width = 400, height = 300, x = 0, y = 0, backgroundColor = '#FFFFFF') {
+    const res = await this.callTool('canvas_create_frame', { name, width, height, x, y, background_color: backgroundColor });
+    return JSON.parse(res);
+  }
+
+  async createText(text, fontSize = 16, x = 0, y = 0, color = '#000000') {
+    const res = await this.callTool('canvas_create_text', { text, font_size: fontSize, x, y, color });
+    return JSON.parse(res);
+  }
+
+  async createRectangle(width = 100, height = 100, x = 0, y = 0, fillColor = '#3B82F6', cornerRadius = 8) {
+    const res = await this.callTool('canvas_create_rectangle', { width, height, x, y, fill_color: fillColor, corner_radius: cornerRadius });
+    return JSON.parse(res);
+  }
+
+  async insertCode(code, x = 0, y = 0) {
+    const res = await this.callTool('canvas_insert_code', { code, x, y });
+    return JSON.parse(res);
+  }
+
   async getCapabilities() {
     const res = await this.callTool('capabilities', {});
     return JSON.parse(res);

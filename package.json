@@ -12,7 +12,9 @@
     "start": "node src/server.js",
     "build:rust": "cargo build --release",
     "test": "node --test tests/*.test.js",
-    "test:rust": "cargo test --workspace"
+    "test:rust": "cargo test --workspace",
+    "test:sdk:ts": "node --test sdk/typescript/test/*.test.js",
+    "test:all": "node --test tests/*.test.js && node --test sdk/typescript/test/*.test.js && cargo test --workspace"
   },
   "keywords": [
     "mcp",

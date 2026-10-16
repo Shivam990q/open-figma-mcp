@@ -1,0 +1,57 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Shivam990q/open-figma-mcp/main/docs/code-connect-schema.json",
+  "name": "DesignSystemCodeConnect",
+  "version": "2.0.0",
+  "mappings": [
+    {
+      "target": "Button",
+      "importPath": "@/components/ui/button",
+      "componentName": "Button",
+      "propsMapping": {
+        "Variant": "variant",
+        "Size": "size",
+        "Disabled": "disabled"
+      },
+      "template": "<Button variant=\"{{Variant}}\" size=\"{{Size}}\">{{children}}</Button>"
+    },
+    {
+      "target": "Card",
+      "importPath": "@/components/ui/card",
+      "componentName": "Card",
+      "propsMapping": {
+        "Title": "title",
+        "Elevation": "elevation"
+      },
+      "template": "<Card title=\"{{Title}}\">\n  <CardContent>{{children}}</CardContent>\n</Card>"
+    },
+    {
+      "target": "Badge",
+      "importPath": "@/components/ui/badge",
+      "componentName": "Badge",
+      "propsMapping": {
+        "Status": "variant"
+      },
+      "template": "<Badge variant=\"{{Status}}\">{{label}}</Badge>"
+    },
+    {
+      "target": "Input",
+      "importPath": "@/components/ui/input",
+      "componentName": "Input",
+      "propsMapping": {
+        "Placeholder": "placeholder",
+        "Type": "type"
+      },
+      "template": "<Input placeholder=\"{{Placeholder}}\" type=\"{{Type}}\" />"
+    },
+    {
+      "target": "Avatar",
+      "importPath": "@/components/ui/avatar",
+      "componentName": "Avatar",
+      "propsMapping": {
+        "Src": "src",
+        "Alt": "alt"
+      },
+      "template": "<Avatar src=\"{{Src}}\" alt=\"{{Alt}}\" />"
+    }
+  ]
+}

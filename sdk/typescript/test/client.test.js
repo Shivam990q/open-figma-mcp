@@ -16,4 +16,10 @@ test('OpenFigmaClient exposes all standard MCP tool helper methods', () => {
   assert.strictEqual(typeof client.getCodeConnect, 'function');
   assert.strictEqual(typeof client.transpileCode, 'function');
   assert.strictEqual(typeof client.audit, 'function');
+  assert.strictEqual(typeof client.createFrame, 'function');
+  assert.strictEqual(typeof client.createText, 'function');
+  assert.strictEqual(typeof client.createRectangle, 'function');
+  assert.strictEqual(typeof client.insertCode, 'function');
+  assert.strictEqual(typeof client.getCapabilities, 'function');
 });
+

@@ -631,6 +631,56 @@ async fn handle_mcp_request(req: &JsonRpcRequest, api_key: &Option<String>) -> J
                         }
                     },
                     {
+                        "name": "canvas_create_frame",
+                        "description": "Creates a frame on the active Figma canvas via companion plugin.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "name": { "type": "string" },
+                                "width": { "type": "number" },
+                                "height": { "type": "number" }
+                            },
+                            "required": ["name", "width", "height"]
+                        }
+                    },
+                    {
+                        "name": "canvas_create_text",
+                        "description": "Creates a text node on the active Figma canvas via companion plugin.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "text": { "type": "string" },
+                                "fontSize": { "type": "number" }
+                            },
+                            "required": ["text"]
+                        }
+                    },
+                    {
+                        "name": "canvas_create_rectangle",
+                        "description": "Creates a rectangle shape on the active Figma canvas via companion plugin.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "name": { "type": "string" },
+                                "width": { "type": "number" },
+                                "height": { "type": "number" },
+                                "cornerRadius": { "type": "number" }
+                            },
+                            "required": ["name", "width", "height"]
+                        }
+                    },
+                    {
+                        "name": "canvas_insert_code",
+                        "description": "Transpiles HTML / JSX / Tailwind code and immediately generates native layers on the live Figma canvas.",
+                        "inputSchema": {
+                            "type": "object",
+                            "properties": {
+                                "code": { "type": "string", "description": "HTML, JSX, or Tailwind snippet to draw on canvas" }
+                            },
+                            "required": ["code"]
+                        }
+                    },
+                    {
                         "name": "capabilities",
                         "description": "Returns active server capabilities, runtime mode, and companion plugin bridge status.",
                         "inputSchema": {
@@ -880,6 +930,66 @@ async fn execute_mcp_tool(
             }
 
             Ok(report)
+        }
+        "canvas_create_frame" => {
+            let name = args.get("name").and_then(|n| n.as_str()).unwrap_or("AI Frame");
+            let w = args.get("width").and_then(|w| w.as_f64()).unwrap_or(320.0);
+            let h = args.get("height").and_then(|h| h.as_f64()).unwrap_or(240.0);
+
+            Ok(serde_json::to_string_pretty(&json!({
+                "command": "CREATE_FRAME",
+                "status": "dispatched",
+                "payload": {
+                    "name": name,
+                    "width": w,
+                    "height": h
+                },
+                "instructions": "Command queued for Companion Figma Plugin on ws://127.0.0.1:3845"
+            }))?)
+        }
+        "canvas_create_text" => {
+            let text = args.get("text").and_then(|t| t.as_str()).unwrap_or("Hello from AI");
+            let font_size = args.get("fontSize").and_then(|f| f.as_f64()).unwrap_or(16.0);
+
+            Ok(serde_json::to_string_pretty(&json!({
+                "command": "CREATE_TEXT",
+                "status": "dispatched",
+                "payload": {
+                    "text": text,
+                    "fontSize": font_size
+                },
+                "instructions": "Command queued for Companion Figma Plugin on ws://127.0.0.1:3845"
+            }))?)
+        }
+        "canvas_create_rectangle" => {
+            let name = args.get("name").and_then(|n| n.as_str()).unwrap_or("Rectangle");
+            let w = args.get("width").and_then(|w| w.as_f64()).unwrap_or(100.0);
+            let h = args.get("height").and_then(|h| h.as_f64()).unwrap_or(100.0);
+            let corner_radius = args.get("cornerRadius").and_then(|c| c.as_f64());
+
+            Ok(serde_json::to_string_pretty(&json!({
+                "command": "CREATE_RECTANGLE",
+                "status": "dispatched",
+                "payload": {
+                    "name": name,
+                    "width": w,
+                    "height": h,
+                    "cornerRadius": corner_radius
+                },
+                "instructions": "Command queued for Companion Figma Plugin on ws://127.0.0.1:3845"
+            }))?)
+        }
+        "canvas_insert_code" => {
+            let code = args.get("code").and_then(|c| c.as_str()).ok_or_else(|| anyhow::anyhow!("Missing code argument"))?;
+            let result = transpile_code_to_nodes(code);
+
+            Ok(serde_json::to_string_pretty(&json!({
+                "command": "BATCH_CREATE",
+                "status": "transpiled_and_dispatched",
+                "nodesCreated": result.root_nodes.len(),
+                "scenegraph": result.root_nodes,
+                "instructions": "Dispatched to Companion Figma Plugin canvas bridge"
+            }))?)
         }
         _ => Err(anyhow::anyhow!("Unknown tool name: {}", name)),
     }

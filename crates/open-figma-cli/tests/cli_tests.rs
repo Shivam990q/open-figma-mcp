@@ -39,3 +39,19 @@ fn test_cli_help_flag() {
     let stdout = String::from_utf8_lossy(&output.stdout);
     assert!(stdout.contains("Autonomous enterprise Model Context Protocol"));
 }
+
+#[test]
+fn test_cli_transpile_command() {
+    let bin = get_open_figma_bin();
+    let mut cmd = Command::new(bin);
+    let output = cmd
+        .arg("transpile")
+        .arg("<button class=\"px-4 py-2 bg-blue-500 text-white rounded-lg\">Launch Rocket</button>")
+        .output()
+        .expect("failed to execute open-figma transpile");
+    assert!(output.status.success());
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(stdout.contains("\"type\": \"FRAME\"") || stdout.contains("\"type\":\"FRAME\""));
+    assert!(stdout.contains("Launch Rocket"));
+}
+

@@ -156,13 +156,83 @@ Runs forensic quality, APCA contrast, prompt-injection defense, and DLP secret l
 
 ---
 
-### `canvas_create_frame` & `canvas_create_text`
-Creates frames and editable text layers on the live Figma canvas via companion plugin bridge.
+### `canvas_create_frame`
+Creates a container frame on the live Figma canvas via companion plugin bridge.
+* **Input Schema:**
+  ```json
+  {
+    "type": "object",
+    "properties": {
+      "name": { "type": "string", "default": "Frame" },
+      "width": { "type": "number", "default": 400 },
+      "height": { "type": "number", "default": 300 },
+      "x": { "type": "number", "default": 0 },
+      "y": { "type": "number", "default": 0 },
+      "background_color": { "type": "string", "default": "#FFFFFF" }
+    }
+  }
+  ```
+
+---
+
+### `canvas_create_text`
+Creates an editable text layer on the live Figma canvas.
+* **Input Schema:**
+  ```json
+  {
+    "type": "object",
+    "properties": {
+      "text": { "type": "string" },
+      "font_size": { "type": "number", "default": 16 },
+      "x": { "type": "number", "default": 0 },
+      "y": { "type": "number", "default": 0 },
+      "color": { "type": "string", "default": "#000000" }
+    },
+    "required": ["text"]
+  }
+  ```
+
+---
+
+### `canvas_create_rectangle`
+Creates a vector rectangle on the active Figma canvas with fill and rounded corner radius.
+* **Input Schema:**
+  ```json
+  {
+    "type": "object",
+    "properties": {
+      "width": { "type": "number", "default": 100 },
+      "height": { "type": "number", "default": 100 },
+      "x": { "type": "number", "default": 0 },
+      "y": { "type": "number", "default": 0 },
+      "fill_color": { "type": "string", "default": "#3B82F6" },
+      "corner_radius": { "type": "number", "default": 8 }
+    }
+  }
+  ```
+
+---
+
+### `canvas_insert_code`
+Transpiles an HTML / JSX / Tailwind string and directly instantiates the entire nested scenegraph tree onto the active Figma canvas in a single atomic batch.
+* **Input Schema:**
+  ```json
+  {
+    "type": "object",
+    "properties": {
+      "code": { "type": "string", "description": "HTML, JSX, or Tailwind snippet to insert onto canvas" },
+      "x": { "type": "number", "default": 0 },
+      "y": { "type": "number", "default": 0 }
+    },
+    "required": ["code"]
+  }
+  ```
 
 ---
 
 ### `capabilities`
 Returns active server status, engine info, supported transports, and companion plugin connection status.
+
 
 ---
 

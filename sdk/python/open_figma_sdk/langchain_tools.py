@@ -28,3 +28,18 @@ class OpenFigmaLangChainTool:
     def audit_security_and_a11y(self, url: str) -> str:
         """Runs APCA contrast checks, DLP secret leak scans, and prompt injection defense."""
         return self.client.audit(url)
+
+    def transpile_html_to_canvas(self, code: str) -> str:
+        """Transpiles HTML/JSX/Tailwind code to Figma scene graph nodes."""
+        return self.client.transpile_code(code)
+
+    def insert_component_to_canvas(self, code: str, x: float = 0.0, y: float = 0.0) -> str:
+        """Transpiles code and directly inserts it into the active Figma canvas."""
+        return self.client.insert_code(code, x=x, y=y)
+
+    def create_canvas_shape(self, shape_type: str, width: float = 100.0, height: float = 100.0, x: float = 0.0, y: float = 0.0, fill_color: str = "#3B82F6") -> str:
+        """Creates a primitive rectangle or frame directly on the canvas."""
+        if shape_type.lower() == "frame":
+            return self.client.create_frame(name="New Frame", width=width, height=height, x=x, y=y, background_color=fill_color)
+        return self.client.create_rectangle(width=width, height=height, x=x, y=y, fill_color=fill_color)
+
