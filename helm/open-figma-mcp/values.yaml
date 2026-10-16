@@ -1,0 +1,91 @@
+# Default values for open-figma-mcp enterprise helm chart
+replicaCount: 2
+
+image:
+  repository: ghcr.io/shivam990q/open-figma-mcp
+  pullPolicy: IfNotPresent
+  tag: "2.0.0"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: "open-figma-mcp"
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 10001
+  runAsGroup: 10001
+  fsGroup: 10001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop:
+      - ALL
+
+service:
+  type: ClusterIP
+  port: 3845
+  metricsPort: 3845
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+  hosts:
+    - host: figma-mcp.internal.company.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: figma-mcp-tls
+      hosts:
+        - figma-mcp.internal.company.com
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 1024Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 20
+  targetCPUUtilizationPercentage: 75
+  targetMemoryUtilizationPercentage: 80
+
+metrics:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 15s
+    scrapeTimeout: 10s
+
+networkPolicy:
+  enabled: true
+
+env:
+  FIGMA_API_KEY: ""
+  RUST_LOG: "info,open_figma_core=debug"
+  CACHE_DIR: "/tmp/open_figma_cache"
+
+volumeMounts:
+  - name: cache-vol
+    mountPath: /tmp
+volumes:
+  - name: cache-vol
+    emptyDir:
+      medium: Memory
+      sizeLimit: 256Mi

@@ -1,0 +1,21 @@
+{
+  "name": "@open-figma/sdk",
+  "version": "2.0.0",
+  "description": "Enterprise TypeScript / JavaScript SDK for OpenFigma Model Context Protocol server",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "keywords": [
+    "figma",
+    "mcp",
+    "model-context-protocol",
+    "design-tokens",
+    "codegen"
+  ],
+  "author": "Shivam <shivam@autonomous.design>",
+  "license": "MIT"
+}

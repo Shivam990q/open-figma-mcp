@@ -1,0 +1,30 @@
+# Rust build artifacts
+target/
+**/*.rs.bk
+Cargo.lock
+
+# Node / JS dependencies
+node_modules/
+dist/
+build/
+*.tsbuildinfo
+
+# Logs & Environment
+*.log
+.env
+.env.local
+.DS_Store
+Thumbs.db
+
+# Figma Export Cache
+.figma-cache/
+figma-export/
+
+# Python
+__pycache__/
+*.pyc
+
+# IDE
+.vscode/
+.idea/
+*.swp

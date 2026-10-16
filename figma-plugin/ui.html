@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>OpenFigma Bridge</title>
+  <style>
+    body {
+      font-family: Inter, system-ui, sans-serif;
+      margin: 0;
+      padding: 16px;
+      background: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 12px;
+    }
+    .connected {
+      background: rgba(16, 185, 129, 0.2);
+      color: #10b981;
+      border: 1px solid #10b981;
+    }
+    .disconnected {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid #ef4444;
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    h2 {
+      margin: 0 0 8px 0;
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+    }
+    p {
+      margin: 0 0 16px 0;
+      font-size: 12px;
+      color: #94a3b8;
+      line-height: 1.5;
+    }
+    .port-info {
+      font-family: monospace;
+      font-size: 11px;
+      background: #1e293b;
+      padding: 4px 8px;
+      border-radius: 4px;
+      color: #38bdf8;
+    }
+  </style>
+</head>
+<body>
+  <div id="statusBadge" class="badge disconnected">
+    <div class="dot"></div>
+    <span id="statusText">Connecting...</span>
+  </div>
+  <h2>OpenFigma Live Bridge</h2>
+  <p>Connecting Figma Canvas to autonomous AI agents in Cursor, Claude Code, and Lovable.</p>
+  <div class="port-info">ws://127.0.0.1:3845</div>
+
+  <script>
+    const statusBadge = document.getElementById('statusBadge');
+    const statusText = document.getElementById('statusText');
+    let ws = null;
+
+    function connect() {
+      ws = new WebSocket('ws://127.0.0.1:3845');
+
+      ws.onopen = () => {
+        statusBadge.className = 'badge connected';
+        statusText.textContent = 'Agent Connected';
+      };
+
+      ws.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          // Relay message to Figma plugin sandbox
+          parent.postMessage({ pluginMessage: data }, '*');
+        } catch (e) {
+          console.error('[OpenFigma UI] Parse error', e);
+        }
+      };
+
+      ws.onclose = () => {
+        statusBadge.className = 'badge disconnected';
+        statusText.textContent = 'Disconnected (Retrying)';
+        setTimeout(connect, 3000);
+      };
+
+      ws.onerror = () => {
+        ws.close();
+      };
+    }
+
+    // Listen for replies from Figma plugin sandbox
+    window.onmessage = (event) => {
+      const msg = event.data.pluginMessage;
+      if (msg && ws && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify(msg));
+      }
+    };
+
+    connect();
+  </script>
+</body>
+</html>

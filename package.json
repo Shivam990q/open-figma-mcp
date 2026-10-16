@@ -1,0 +1,42 @@
+{
+  "name": "open-figma-mcp",
+  "version": "2.0.0",
+  "description": "High-performance enterprise Model Context Protocol (MCP) server & design engine for Figma",
+  "main": "src/server.js",
+  "bin": {
+    "open-figma": "bin/open-figma.js",
+    "open-figma-mcp": "bin/open-figma.js"
+  },
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "build:rust": "cargo build --release",
+    "test": "node --test tests/*.test.js",
+    "test:rust": "cargo test --workspace"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "figma",
+    "design-to-code",
+    "kiwi",
+    "ai-agent",
+    "cursor",
+    "claude",
+    "lovable",
+    "tokens"
+  ],
+  "author": "Shivam <shivam@autonomous.design>",
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.0",
+    "ws": "^8.18.0",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

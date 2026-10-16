@@ -1,0 +1,19 @@
+apiVersion: v2
+name: open-figma-mcp
+description: Enterprise Model Context Protocol (MCP) server & autonomous design engine for Figma
+type: application
+version: 2.0.0
+appVersion: 2.0.0
+keywords:
+  - figma
+  - mcp
+  - model-context-protocol
+  - ai-agent
+  - design-system
+  - code-connect
+home: https://github.com/Shivam990q/open-figma-mcp
+sources:
+  - https://github.com/Shivam990q/open-figma-mcp
+maintainers:
+  - name: Shivam
+    email: shivam@autonomous.design

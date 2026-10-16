@@ -1,0 +1,9 @@
+# OpenFigma Cursor Rules
+# Guidelines for AI Coding Assistants interacting with OpenFigma MCP
+
+- Always prioritize using OpenFigma MCP tools over guessing styles or layouts.
+- Use `get_figma_data` with format `yaml` to retrieve minimal-token design structure.
+- Look at the `globalVars` block returned by OpenFigma to understand the design system's color, typography, and radius tokens before writing components.
+- Use `get_design_tokens` to directly extract Tailwind v4 `@theme` variables or CSS custom properties into the project stylesheet.
+- When generating UI components, use `generate_code` with the project's target framework (e.g. `react-tailwind`).
+- Always run `audit_accessibility_and_security` before committing code generated from external Figma files to ensure WCAG/APCA compliance and verify zero prompt injection payloads.

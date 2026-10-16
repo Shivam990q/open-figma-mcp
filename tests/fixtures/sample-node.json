@@ -1,0 +1,78 @@
+{
+  "id": "1:10",
+  "name": "Navigation Bar",
+  "type": "FRAME",
+  "visible": true,
+  "layoutMode": "HORIZONTAL",
+  "primaryAxisAlignItems": "CENTER",
+  "counterAxisAlignItems": "CENTER",
+  "itemSpacing": 16,
+  "paddingTop": 12,
+  "paddingRight": 24,
+  "paddingBottom": 12,
+  "paddingLeft": 24,
+  "cornerRadius": 8,
+  "fills": [
+    {
+      "type": "SOLID",
+      "visible": true,
+      "color": { "r": 0.05, "g": 0.1, "b": 0.2, "a": 1 }
+    }
+  ],
+  "children": [
+    {
+      "id": "1:11",
+      "name": "Brand Logo",
+      "type": "TEXT",
+      "visible": true,
+      "characters": "OpenFigma",
+      "fills": [
+        {
+          "type": "SOLID",
+          "visible": true,
+          "color": { "r": 1, "g": 1, "b": 1, "a": 1 }
+        }
+      ],
+      "style": {
+        "fontFamily": "Inter",
+        "fontWeight": 700,
+        "fontSize": 18
+      }
+    },
+    {
+      "id": "1:12",
+      "name": "CTA Button",
+      "type": "FRAME",
+      "visible": true,
+      "layoutMode": "HORIZONTAL",
+      "paddingTop": 8,
+      "paddingRight": 16,
+      "paddingBottom": 8,
+      "paddingLeft": 16,
+      "cornerRadius": 6,
+      "fills": [
+        {
+          "type": "SOLID",
+          "visible": true,
+          "color": { "r": 0.23, "g": 0.51, "b": 0.96, "a": 1 }
+        }
+      ],
+      "children": [
+        {
+          "id": "1:13",
+          "name": "Button Label",
+          "type": "TEXT",
+          "visible": true,
+          "characters": "Get Started",
+          "fills": [
+            {
+              "type": "SOLID",
+              "visible": true,
+              "color": { "r": 1, "g": 1, "b": 1, "a": 1 }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

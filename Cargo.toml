@@ -1,0 +1,43 @@
+[workspace]
+members = [
+    "crates/open-figma-core",
+    "crates/open-figma-cli",
+]
+resolver = "2"
+
+[workspace.package]
+version = "2.0.0"
+authors = ["Shivam <shivam@autonomous.design>"]
+edition = "2024"
+license = "MIT"
+repository = "https://github.com/Shivam990q/open-figma-mcp"
+readme = "README.md"
+description = "High-performance enterprise Model Context Protocol (MCP) server & autonomous design engine for Figma"
+
+[workspace.dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+serde_yaml = "0.9"
+tokio = { version = "1.43", features = ["full"] }
+axum = { version = "0.8", features = ["ws", "macros"] }
+tower = { version = "0.5", features = ["util"] }
+tower-http = { version = "0.6", features = ["cors", "trace", "fs"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+flate2 = "1.0"
+zstd = "0.13"
+byteorder = "1.5"
+regex = "1.11"
+clap = { version = "4.5", features = ["derive"] }
+thiserror = "2.0"
+anyhow = "1.0"
+async-trait = "0.1"
+reqwest = { version = "0.12", features = ["json", "stream"] }
+futures = "0.3"
+uuid = { version = "1.11", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+taffy = "0.7"
+aho-corasick = "1.1"
+bytes = "1.9"
+zip = { version = "2.2", default-features = false, features = ["deflate"] }
+sha2 = "0.10"

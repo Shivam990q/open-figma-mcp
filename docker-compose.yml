@@ -1,0 +1,16 @@
+services:
+  open-figma-mcp:
+    build: .
+    container_name: open-figma-mcp
+    restart: unless-stopped
+    ports:
+      - "3845:3845"
+    environment:
+      - FIGMA_API_KEY=${FIGMA_API_KEY}
+      - PORT=3845
+      - RUST_LOG=info
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3845/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3

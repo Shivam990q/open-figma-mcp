@@ -1,0 +1,28 @@
+[package]
+name = "open-figma-core"
+version.workspace = true
+authors.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Core engine for open-figma-mcp: Kiwi parser, layout solver, APCA contrast, codegen, and token deduplication"
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true
+serde_yaml.workspace = true
+flate2.workspace = true
+zstd.workspace = true
+byteorder.workspace = true
+regex.workspace = true
+thiserror.workspace = true
+anyhow.workspace = true
+taffy.workspace = true
+aho-corasick.workspace = true
+bytes.workspace = true
+tracing.workspace = true
+reqwest.workspace = true
+futures.workspace = true
+chrono.workspace = true
+uuid.workspace = true
+zip.workspace = true
+sha2.workspace = true
