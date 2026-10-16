@@ -12,19 +12,29 @@ This directory (`research_ecosystem/`) constitutes an exhaustive, all-inclusive 
 
 ```
 research_ecosystem/
-├── repos/                             # 13 Full Cloned Upstream Git Repositories
-│   ├── Figma-Context-MCP/             # GLips/Figma-Context-MCP (16k stars - leading MCP server)
-│   ├── figma-console-mcp/             # southleft/figma-console-mcp (121 tools + desktop bridge)
-│   ├── plumb-mcp/                     # tathagat22/plumb-mcp (Local rate-limit-free server & bench)
-│   ├── noemuch-bridge/                # noemuch/bridge (WebSocket Figma Plugin to terminal bridge)
-│   ├── figma-code-connect/            # figma/code-connect (Official Figma Code Connect engine & CLI)
-│   ├── figma-rest-api-spec/           # figma/rest-api-spec (Official OpenAPI 3.0 YAML & TS types)
-│   ├── figma-plugin-samples/          # figma/plugin-samples (Official Figma Plugin API templates)
+├── repos/                             # 24 Full Cloned Upstream Git Repositories
+│   ├── apca-compliance-figma/         # Merkle-XDI/apca-compliance-figma (APCA contrast tool)
+│   ├── bernaferrari-FigmaToCode/      # bernaferrari/FigmaToCode (10k stars - Tailwind/Flutter/SwiftUI)
+│   ├── builderio-figma-html/          # BuilderIO/figma-html (10k+ stars - DOM & HTML to Figma engine)
 │   ├── evanw-kiwi/                    # evanw/kiwi (Evan Wallace's binary schema serializer & Rust core)
-│   ├── figma-fig-tools/               # mikesimons/figma-fig-tools (.fig unpacker & kiwi decoders)
 │   ├── fig-kiwi/                      # npm fig-kiwi (Decompiled TypeScript schema of Figma .fig)
-│   ├── builderio-figma-html/          # BuilderIO/figma-html (DOM & HTML to Figma converter engine)
-│   ├── bernaferrari-FigmaToCode/      # bernaferrari/FigmaToCode (Tailwind, Flutter & SwiftUI translator)
+│   ├── figma-code-connect/            # figma/code-connect (Official Figma Code Connect engine & CLI)
+│   ├── figma-community-resources/     # figma/community-resources (Official community plugins & skills)
+│   ├── figma-console-mcp/             # southleft/figma-console-mcp (121 tools + desktop bridge)
+│   ├── Figma-Context-MCP/             # GLips/Figma-Context-MCP (16k stars - leading MCP server)
+│   ├── figma-fig-tools/               # mikesimons/figma-fig-tools (.fig unpacker & kiwi decoders)
+│   ├── figma-mcp-server-guide/        # figma/mcp-server-guide (Official Figma MCP server guide & registry)
+│   ├── figma-plugin-samples/          # figma/plugin-samples (Official Figma Plugin API templates)
+│   ├── figma-rest-api-spec/           # figma/rest-api-spec (Official OpenAPI 3.0 YAML & TS types)
+│   ├── figma-ui-mcp/                  # TranHoaiHung/figma-ui-mcp (Figma UI drawing MCP)
+│   ├── figma-widget-samples/          # figma/widget-samples (Official Figma Widget API samples)
+│   ├── figwright/                     # awdr74100/figwright (1k stars - two-way Figma MCP server)
+│   ├── lukasoppermann-design-tokens/  # lukasoppermann/design-tokens (Figma tokens exporter)
+│   ├── modelcontextprotocol-servers/  # modelcontextprotocol/servers (Anthropic's official MCP server catalog)
+│   ├── noemuch-bridge/                # noemuch/bridge (WebSocket Figma Plugin to terminal bridge)
+│   ├── open-pencil/                   # open-pencil/open-pencil (Rust + Tauri AI design editor with .fig engine)
+│   ├── plumb-mcp/                     # tathagat22/plumb-mcp (Local rate-limit-free server & bench)
+│   ├── style-dictionary/              # style-dictionary/style-dictionary (Amazon's Style Dictionary engine)
 │   ├── taffy-layout-engine/           # DioxusLabs/taffy (Pure Rust Flexbox & CSS Grid solver)
 │   └── tokens-studio-sd-transforms/   # tokens-studio/sd-transforms (Design tokens transformer)
 │
@@ -40,15 +50,20 @@ research_ecosystem/
 │   ├── figma-openapi.yaml             # Official 414 KB OpenAPI 3.0 specification for Figma REST API
 │   ├── figma-api-types.ts             # Official 195 KB TypeScript type definitions for all Figma nodes
 │   ├── figma-kiwi-types.d.ts          # Complete 141 KB / 3,529 lines decompiled Kiwi binary schema types
-│   └── code-connect-types.d.ts        # Official Figma Code Connect template type definitions
+│   ├── code-connect-types.d.ts        # Official Figma Code Connect template type definitions
+│   ├── official-figma-mcp.json        # Official 19 cloud tools configuration (mcp.figma.com)
+│   └── official-figma-gemini-extension.json # Official Gemini extension bundle config
 │
-└── comparative_deep_audit/            # 6 Forensic Source-Level Audit Reports
+└── comparative_deep_audit/            # 9 Forensic Source-Level Audit Reports
     ├── audit_GLips_figma_context_mcp.md
     ├── audit_southleft_figma_console_mcp.md
     ├── audit_tathagat22_plumb_mcp.md
     ├── audit_noemuch_bridge.md
     ├── audit_builderio_html_to_figma.md
-    └── audit_bernaferrari_figma_to_code.md
+    ├── audit_bernaferrari_figma_to_code.md
+    ├── audit_open_pencil.md
+    ├── audit_figwright.md
+    └── audit_figma_official_mcp_server_guide.md
 ```
 
 ---
