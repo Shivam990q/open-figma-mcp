@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license">
   <img src="https://img.shields.io/badge/engine-Rust%20SIMD%20%2B%20Kiwi%20%2B%20Taffy-orange" alt="Rust Engine">
   <img src="https://img.shields.io/badge/MCP-compatible-0a7cff" alt="MCP compatible">
-  <img src="https://img.shields.io/badge/tests-92%20passing%20(Rust%20%2B%20Node%20%2B%20Python%20%2B%20TS)-success" alt="tests">
+  <img src="https://img.shields.io/badge/tests-96%20passing%20(Rust%20%2B%20Node%20%2B%20Python%20%2B%20TS)-success" alt="tests">
   <img src="https://img.shields.io/badge/observability-Prometheus%20%2B%20OTel-blueviolet" alt="observability">
 </p>
 
@@ -58,9 +58,9 @@ npx -y open-figma-mcp --stdio --figma-api-key figd_YOUR_TOKEN
 npx -y open-figma-mcp --port 3845 --figma-api-key figd_YOUR_TOKEN
 ```
 
-### Option 3: Native Desktop GUI App (Zero-Electron Overhead)
+### Option 3: Genuine Native Electron Desktop Workbench
 ```bash
-# Launches dedicated standalone desktop application window with live canvas & companion bridge
+# Launches dedicated native desktop application with layer hierarchy AST, tokens palette, and live code generator
 npm run desktop
 ```
 
@@ -199,7 +199,7 @@ To enable live canvas mutations (creating frames, writing text, and editing comp
 # Run native Rust unit & CLI integration tests (27 passed)
 cargo test --workspace
 
-# Run Node.js enterprise engine & canvas tests (18 passed)
+# Run Node.js enterprise engine, IPC & canvas tests (44 passed)
 npm test
 
 # Run TypeScript SDK tests (2 passed)
@@ -208,7 +208,7 @@ npm run test:sdk:ts
 # Run Python SDK tests (3 passed)
 python sdk/python/test_client.py
 
-# Run all suites simultaneously (50 tests, 0 failures)
+# Run all suites simultaneously (76 unit/integration tests + 20 benchmark/live probes, 0 failures)
 npm run test:all
 ```
 
