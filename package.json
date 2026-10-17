@@ -39,6 +39,7 @@
     "yaml": "^2.7.0"
   },
   "devDependencies": {
+    "electron": "^44.8.0",
     "esbuild": "^0.25.0"
   },
   "engines": {

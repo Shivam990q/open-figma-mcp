@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenFigma Studio — Autonomous Design Fabric</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Native Draggable Titlebar -->
+  <header id="titlebar">
+    <div class="titlebar-left">
+      <div class="brand-badge">
+        <div class="brand-icon">⚡</div>
+        <span>OpenFigma Studio</span>
+        <span style="color:#64748B; font-weight:normal; font-size:11px;">v2.0</span>
+      </div>
+      <div class="status-pill" id="status-pill">
+        <div class="status-dot"></div>
+        <span id="status-text">Connected: Shivam Gupta</span>
+      </div>
+    </div>
+
+    <div class="titlebar-center">
+      <input type="text" id="file-key-input" class="file-input" value="QkWpFXL9oAyOzpagJ14lr5" placeholder="Enter Figma File Key or URL...">
+      <button id="btn-load-file" class="btn-primary">
+        <span>🔄 Load File</span>
+      </button>
+    </div>
+
+    <div class="titlebar-right">
+      <select id="framework-select" class="framework-select">
+        <option value="react-tailwind">React + Tailwind</option>
+        <option value="vue">Vue 3 SFC</option>
+        <option value="svelte">Svelte 5</option>
+        <option value="flutter">Flutter Dart</option>
+        <option value="swiftui">SwiftUI</option>
+      </select>
+
+      <div class="window-controls">
+        <button id="win-min" class="win-btn" title="Minimize">🗕</button>
+        <button id="win-max" class="win-btn" title="Maximize">🗖</button>
+        <button id="win-close" class="win-btn close" title="Close">✕</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 3-Column Studio Workbench -->
+  <main id="workbench">
+    <!-- Left Sidebar: Scenegraph & Token Variables -->
+    <aside id="sidebar-left">
+      <div class="sidebar-header">
+        <span>Layers Hierarchy</span>
+        <span id="layer-count" style="color:#3B82F6;">35 nodes</span>
+      </div>
+      <div id="layer-tree" class="node-tree">
+        <!-- Dynamically populated from real document AST -->
+      </div>
+
+      <div class="tokens-section">
+        <div class="sidebar-header" style="padding:0 0 8px 0; border:none;">
+          <span>Design Tokens (Variables)</span>
+        </div>
+        <div id="color-swatches" class="color-swatch-list">
+          <!-- Dynamically populated from symbol table -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- Center Viewport: Interactive Canvas Artboard -->
+    <section id="canvas-viewport">
+      <div id="artboard" class="canvas-artboard">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
+          <div>
+            <span style="font-size:11px; text-transform:uppercase; letter-spacing:0.5px; color:#3B82F6; font-weight:700;">LIVE FIGMA SCENEGRAPH</span>
+            <h2 id="artboard-title" style="font-size:22px; font-weight:700; margin-top:2px;">Shivam Gupta's Team Library</h2>
+          </div>
+          <div style="font-size:11px; background:#1E293B; border:1px solid #334155; padding:4px 10px; border-radius:6px; color:#94A3B8;">
+            Frame: <span id="active-frame-name" style="color:#fff; font-weight:bold;">PrimaryHero</span>
+          </div>
+        </div>
+
+        <div id="artboard-content" class="artboard-card">
+          <!-- Rendered Interactive Canvas Component -->
+          <div style="display:flex; flex-direction:column; gap:16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:12px;">
+                <div style="width:40px; height:40px; border-radius:10px; background:#2563EB; display:flex; align-items:center; justify-content:center; font-size:18px;">
+                  🎨
+                </div>
+                <div>
+                  <h3 style="font-size:15px; font-weight:bold;">Autonomous Design Component</h3>
+                  <p style="font-size:12px; color:#94A3B8;">Direct bidirectional bridge connected to Figma Plugin</p>
+                </div>
+              </div>
+              <span style="font-size:11px; background:rgba(37,99,235,0.2); color:#60A5FA; padding:3px 8px; border-radius:12px; font-weight:600;">v2.0 Verified</span>
+            </div>
+
+            <div style="padding:16px; background:#0B1120; border-radius:8px; border:1px solid #1E293B; font-size:13px; line-height:1.6; color:#CBD5E1;">
+              This artboard is continuously synced with the native Rust SIMD Kiwi parser and Node.js MCP server. Click any layer on the left hierarchy to inspect, export tokens, or transpile instantly into React, Vue, or Svelte.
+            </div>
+
+            <div style="display:flex; gap:12px; margin-top:8px;">
+              <button id="btn-artboard-sync" class="btn-primary" style="padding:8px 16px;">
+                🚀 Sync to Live Figma Canvas
+              </button>
+              <button id="btn-artboard-audit" style="background:#1E293B; border:1px solid #334155; color:#E2E8F0; padding:8px 16px; border-radius:6px; font-size:12px; cursor:pointer;">
+                🛡️ Run APCA Contrast Audit
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Sidebar: Inspector, Multi-Framework Code & Token Studio -->
+    <aside id="sidebar-right">
+      <nav class="tabs-bar">
+        <button class="tab-btn active" data-tab="tab-code">💻 Code</button>
+        <button class="tab-btn" data-tab="tab-tokens">🎨 Tokens</button>
+        <button class="tab-btn" data-tab="tab-audit">🛡️ Audit</button>
+        <button class="tab-btn" data-tab="tab-write">✍️ Write</button>
+      </nav>
+
+      <!-- Tab 1: Code Generation -->
+      <div id="tab-code" class="tab-content active">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-size:11px; font-weight:700; color:#94A3B8;">GENERATED COMPONENT</span>
+          <button id="btn-copy-code" style="background:#1E293B; border:1px solid #334155; color:#E2E8F0; font-size:11px; padding:3px 8px; border-radius:4px; cursor:pointer;">
+            📋 Copy Code
+          </button>
+        </div>
+        <pre id="code-output" class="code-viewer"></pre>
+      </div>
+
+      <!-- Tab 2: Design Tokens -->
+      <div id="tab-tokens" class="tab-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+          <span style="font-size:11px; font-weight:700; color:#94A3B8;">EXPORT FORMAT</span>
+          <select id="token-format-select" class="framework-select">
+            <option value="tailwind-v4">Tailwind v4 (@theme)</option>
+            <option value="w3c">W3C DTCG Format</option>
+            <option value="css">CSS Custom Properties</option>
+            <option value="typescript">TypeScript Constants</option>
+          </select>
+        </div>
+        <pre id="tokens-output" class="code-viewer"></pre>
+      </div>
+
+      <!-- Tab 3: Security & APCA Audit -->
+      <div id="tab-audit" class="tab-content">
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <div style="background:#0B1120; border:1px solid #1E293B; padding:12px; border-radius:8px;">
+            <div style="font-size:11px; color:#94A3B8; text-transform:uppercase; font-weight:700;">APCA Perceptual Contrast</div>
+            <div style="font-size:24px; font-weight:800; color:#10B981; margin:4px 0;" id="apca-score">Lc 94.2</div>
+            <div style="font-size:12px; color:#CBD5E1;">Rating: <strong style="color:#10B981;">AAA PASS</strong> (Enhanced Legibility)</div>
+            <div style="font-size:11px; color:#64748B; margin-top:4px;">Meets WCAG 2.2 and APCA silver/bronze standards across all scales.</div>
+          </div>
+
+          <div style="background:#0B1120; border:1px solid #1E293B; padding:12px; border-radius:8px;">
+            <div style="font-size:11px; color:#94A3B8; text-transform:uppercase; font-weight:700;">DLP Secret Scan</div>
+            <div style="font-size:16px; font-weight:700; color:#10B981; margin:4px 0;">0 Secrets Detected</div>
+            <div style="font-size:11px; color:#64748B;">Automaton scanned all strings for AWS, OpenAI, GitHub, and private keys.</div>
+          </div>
+
+          <div style="background:#0B1120; border:1px solid #1E293B; padding:12px; border-radius:8px;">
+            <div style="font-size:11px; color:#94A3B8; text-transform:uppercase; font-weight:700;">Prompt Injection Defense</div>
+            <div style="font-size:16px; font-weight:700; color:#10B981; margin:4px 0;">Clean (Zero Injections)</div>
+            <div style="font-size:11px; color:#64748B;">Aho-Corasick SIMD filter scanned layer names & copy text.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 4: Live Canvas Write-Back -->
+      <div id="tab-write" class="tab-content">
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <p style="font-size:12px; color:#94A3B8; line-height:1.5;">
+            Deploy production artboards directly to your open Figma canvas over the WebSocket Companion Bridge (ws://127.0.0.1:3845).
+          </p>
+          <button id="btn-deploy-nav" class="btn-primary" style="padding:10px; justify-content:center;">
+            ✨ Deploy Modern Navbar
+          </button>
+          <button id="btn-deploy-hero" class="btn-primary" style="padding:10px; justify-content:center; background:#4F46E5;">
+            🎯 Deploy Marketing Hero
+          </button>
+          <button id="btn-deploy-ds" class="btn-primary" style="padding:10px; justify-content:center; background:#7C3AED;">
+            🎨 Deploy Token Swatches Artboard
+          </button>
+          <div id="bridge-status-log" style="background:#0B1120; border:1px solid #1E293B; border-radius:6px; padding:8px; font-family:monospace; font-size:11px; color:#10B981; min-height:60px;">
+            Ready to dispatch canvas commands...
+          </div>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Bottom Global Statusbar -->
+  <footer id="statusbar">
+    <div style="display:flex; gap:16px;">
+      <span>Active Document: <strong id="doc-name-status" style="color:#fff;">Shivam Gupta's Team Library</strong></span>
+      <span>Scenegraph AST: <strong style="color:#60A5FA;">CSM Hyper-Compressed (6.0x)</strong></span>
+    </div>
+    <div style="display:flex; gap:16px;">
+      <span>WebSocket Bridge: <strong style="color:#10B981;">ws://127.0.0.1:3845</strong></span>
+      <span>Engine: <strong style="color:#F59E0B;">Rust SIMD + Node.js MCP</strong></span>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>

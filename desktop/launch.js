@@ -62,9 +62,25 @@ async function startServerIfNeeded() {
   throw new Error(`Server failed to start on port ${PORT} within 4 seconds.`);
 }
 
+import electronPath from 'electron';
+
 function launchDesktopWindow(url) {
   const platform = process.platform;
-  console.log(`🚀 Spawning native desktop application window for: ${url}\n`);
+  const mainScript = resolve(rootDir, 'desktop', 'main.cjs');
+
+  if (electronPath && existsSync(electronPath) && existsSync(mainScript)) {
+    console.log('🚀 Spawning genuine native Electron desktop workbench (Zero browser chrome)...');
+    const child = spawn(electronPath, [mainScript], {
+      detached: true,
+      stdio: 'ignore',
+      cwd: rootDir,
+    });
+    child.unref();
+    console.log(`✔ Native Electron Desktop Application launched successfully via: ${electronPath}`);
+    return;
+  }
+
+  console.log(`🚀 Spawning desktop application window for: ${url}\n`);
 
   if (platform === 'win32') {
     // Windows: Check MS Edge or Chrome in app mode
