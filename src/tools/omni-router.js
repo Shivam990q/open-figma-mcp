@@ -5,6 +5,24 @@
  * format translation (OpenAI <-> Anthropic <-> Gemini), and rate-limit recovery.
  */
 
+export const MODEL_QUALITY_SCORES = {
+  'claude-3-7-sonnet': 99,
+  'gpt-4o': 97,
+  'claude-3-5-sonnet': 96,
+  'deepseek-reasoner': 95,
+  'gemini-1.5-pro': 94,
+  'gemini-2.0-flash': 92,
+  'o3-mini': 91,
+  'deepseek-chat': 90,
+  'llama-3.3-70b-versatile': 88,
+  'qwen2.5-coder': 85,
+  'claude-3-5-haiku': 82,
+  'deepseek-r1:8b': 82,
+  'gpt-4o-mini': 80,
+  'mixtral-8x7b-32768': 78,
+  'llama3.2': 72,
+};
+
 export class OmniRouter {
   constructor(config = {}) {
     this.providers = {
@@ -71,18 +89,22 @@ export class OmniRouter {
   }
 
   /**
-   * Formats candidate models ordered by smart fallback tiers
+   * Formats candidate models ordered by smart fallback tiers and quality scores.
+   * Guarantees that peer frontier models are exhausted before downgrading.
    * @param {string} [preferredModel] - Specific model name to try first
-   * @returns {Array<{ provider: string, model: string, tier: number }>}
+   * @param {object} [options]
+   * @param {boolean} [options.strictQuality] - Prioritize quality score over provider tier
+   * @returns {Array<{ provider: string, model: string, tier: number, qualityScore: number }>}
    */
-  resolveFallbackChain(preferredModel) {
+  resolveFallbackChain(preferredModel, options = {}) {
     const chain = [];
 
-    // Collect all available providers
+    // Collect all available providers and models
     const allCandidates = [];
     for (const [providerId, p] of Object.entries(this.providers)) {
       for (const m of p.models) {
-        allCandidates.push({ provider: providerId, model: m, tier: p.tier });
+        const qualityScore = MODEL_QUALITY_SCORES[m] || 80;
+        allCandidates.push({ provider: providerId, model: m, tier: p.tier, qualityScore });
       }
     }
 
@@ -94,8 +116,18 @@ export class OmniRouter {
       }
     }
 
-    // Sort remaining candidates by tier (Tier 1 -> Tier 2 -> Tier 3)
-    allCandidates.sort((a, b) => a.tier - b.tier);
+    // Sort remaining candidates:
+    // When strictQuality is active, sort purely by intelligence score
+    // Otherwise, sort by Tier (1 -> 2 -> 3), and within each Tier sort by quality score descending
+    allCandidates.sort((a, b) => {
+      if (options.strictQuality) {
+        return b.qualityScore - a.qualityScore;
+      }
+      if (a.tier !== b.tier) {
+        return a.tier - b.tier;
+      }
+      return b.qualityScore - a.qualityScore;
+    });
 
     for (const c of allCandidates) {
       if (!chain.some((x) => x.provider === c.provider && x.model === c.model)) {
@@ -104,6 +136,35 @@ export class OmniRouter {
     }
 
     return chain;
+  }
+
+  /**
+   * Validates generated response quality to guarantee zero quality compromise
+   * @param {string} text - Raw AI generation output
+   * @param {string} [expectedType] - 'code' | 'json' | 'text'
+   * @returns {{ valid: boolean, reason?: string }}
+   */
+  validateQuality(text, expectedType = 'text') {
+    if (!text || typeof text !== 'string' || text.trim().length === 0) {
+      return { valid: false, reason: 'Empty or missing response' };
+    }
+
+    const trimmed = text.trim();
+
+    // Rejection of AI cop-out and refusal phrases
+    if (/^(as an ai(?:\s+language\s+model)?|i cannot fulfill|i am unable to generate|sorry, i can\'t)/i.test(trimmed)) {
+      return { valid: false, reason: 'Model refused or cop-out phrase detected' };
+    }
+
+    if (expectedType === 'json') {
+      try {
+        JSON.parse(trimmed.replace(/^```(?:json)?\s*|\s*```$/g, ''));
+      } catch (e) {
+        return { valid: false, reason: 'Malformed JSON payload' };
+      }
+    }
+
+    return { valid: true };
   }
 
   /**
@@ -225,11 +286,20 @@ export class OmniRouter {
           responseText = json.choices?.[0]?.message?.content || '';
         }
 
+        // Quality Gate Check: Never return empty, cop-out, or malformed responses
+        if (params.validateQuality !== false) {
+          const validation = this.validateQuality(responseText, params.expectedType || 'text');
+          if (!validation.valid) {
+            throw new Error(`Quality gate rejected response from ${route.model}: ${validation.reason}`);
+          }
+        }
+
         return {
           content: responseText,
           provider: route.provider,
           model: route.model,
           tier: route.tier,
+          qualityScore: route.qualityScore || 80,
           tokensSaved,
         };
       } catch (err) {

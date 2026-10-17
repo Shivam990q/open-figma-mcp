@@ -116,3 +116,54 @@ test('OmniRouter handles Gemini response format cleanly', async () => {
   assert.strictEqual(result.content, 'GEMINI_AST_PAYLOAD');
   assert.strictEqual(result.provider, 'gemini');
 });
+
+test('OmniRouter guarantees frontier peer models precede low-tier models in fallback order', () => {
+  const router = new OmniRouter();
+  const chain = router.resolveFallbackChain();
+
+  const idxClaudeSonnet = chain.findIndex((c) => c.model === 'claude-3-7-sonnet');
+  const idxGpt4o = chain.findIndex((c) => c.model === 'gpt-4o');
+  const idxHaiku = chain.findIndex((c) => c.model === 'claude-3-5-haiku');
+  const idxGptMini = chain.findIndex((c) => c.model === 'gpt-4o-mini');
+
+  // Frontier intelligence models must always be evaluated before lightweight models
+  assert.ok(idxClaudeSonnet < idxHaiku, 'Claude 3.7 Sonnet must precede Haiku');
+  assert.ok(idxGpt4o < idxGptMini, 'GPT-4o must precede GPT-4o-mini');
+});
+
+test('OmniRouter quality gate intercepts and rejects AI cop-out refusal responses', async () => {
+  const router = new OmniRouter();
+  let attempt = 0;
+
+  const mockFetch = async () => {
+    attempt++;
+    if (attempt === 1) {
+      // First provider returns refusal/cop-out
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [{ message: { content: 'As an AI language model, I cannot fulfill this request.' } }],
+        }),
+      };
+    }
+
+    // Second provider generates genuine high-quality code
+    return {
+      ok: true,
+      status: 200,
+      json: async () => ({
+        choices: [{ message: { content: 'export const Button = () => <button className="bg-blue-600">Save</button>;' } }],
+      }),
+    };
+  };
+
+  const result = await router.dispatch({
+    messages: [{ role: 'user', content: 'Create a button component' }],
+    mockFetch,
+  });
+
+  assert.strictEqual(result.content, 'export const Button = () => <button className="bg-blue-600">Save</button>;');
+  assert.ok(attempt >= 2, 'Router must have rejected the refusal and fallen back');
+});
+
