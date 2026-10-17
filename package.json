@@ -14,7 +14,8 @@
     "test": "node --test tests/*.test.js",
     "test:rust": "cargo test --workspace",
     "test:sdk:ts": "node --test sdk/typescript/test/*.test.js",
-    "test:all": "node --test tests/*.test.js && node --test sdk/typescript/test/*.test.js && cargo test --workspace"
+    "test:all": "node --test tests/*.test.js && node --test sdk/typescript/test/*.test.js && cargo test --workspace",
+    "test:token": "node tests/test_live_figma_token.js"
   },
   "keywords": [
     "mcp",
