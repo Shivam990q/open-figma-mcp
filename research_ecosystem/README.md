@@ -45,7 +45,7 @@ research_ecosystem/
 │   ├── taffy-layout-engine/           # DioxusLabs/taffy (Pure Rust Flexbox & CSS Grid solver)
 │   └── tokens-studio-sd-transforms/   # tokens-studio/sd-transforms (Design tokens transformer)
 │
-├── articles_and_scrapes/              # 11 Forensic Deep-Dive Engineering Articles
+├── articles_and_scrapes/              # 12 Forensic Deep-Dive Engineering Articles
 │   ├── 01_figma_binary_kiwi_wire_protocol_teardown.md
 │   ├── 02_official_figma_mcp_vs_open_source_deep_dive.md
 │   ├── 03_figma_code_connect_internals_and_open_alternative.md
@@ -56,7 +56,8 @@ research_ecosystem/
 │   ├── 08_multiplayer_crdt_vs_ot_and_scenegraph_immutability.md
 │   ├── 09_9router_and_omniroute_multi_provider_fallback_deep_dive.md
 │   ├── 10_open_claude_design_iframe_rpc_and_visual_canvas_teardown.md
-│   └── 11_drive9_layerfs_and_persistent_agent_workspace_kernel.md
+│   ├── 11_drive9_layerfs_and_persistent_agent_workspace_kernel.md
+│   └── 12_figma_live_canvas_control_and_unbreakable_mediator_architecture.md
 │
 ├── schemas_and_specs/                 # Authoritative Industry Schemas & Type Specs
 │   ├── figma-openapi.yaml             # Official 414 KB OpenAPI 3.0 specification for Figma REST API

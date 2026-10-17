@@ -147,6 +147,21 @@ export function generatePreviewHtml(componentCode = '', options = {}) {
           <input type="range" id="tweak-radius" min="0" max="32" value="8" style="width:100%; cursor:pointer;" oninput="applyTweakRadius(this.value)">
         </div>
       </div>
+
+      <h3 style="font-size:14px; font-weight:bold; color:#0F172A; border-bottom:1px solid #F1F5F9; padding-bottom:8px; margin-top:24px;">
+        🚀 Instant Canvas Scaffolding
+      </h3>
+      <div style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+        <button class="btn btn-secondary" style="width:100%; text-align:left; font-size:12px; padding:8px 10px;" onclick="deployComponent('canvas_create_navbar', { brandName: 'Acme Pro', theme: 'dark' })">
+          ✨ Deploy Modern Navbar
+        </button>
+        <button class="btn btn-secondary" style="width:100%; text-align:left; font-size:12px; padding:8px 10px;" onclick="deployComponent('canvas_create_hero_section', { title: 'Autonomous Design Fabric', badge: 'v2.0 Enterprise' })">
+          🎯 Deploy Hero Section
+        </button>
+        <button class="btn btn-secondary" style="width:100%; text-align:left; font-size:12px; padding:8px 10px;" onclick="deployComponent('canvas_create_design_system_scaffold', { brandName: 'Quantum Design System', primaryColor: '#2563EB' })">
+          🎨 Deploy Full Design System
+        </button>
+      </div>
     </div>
   </div>
 
@@ -266,6 +281,27 @@ export function generatePreviewHtml(componentCode = '', options = {}) {
       .then(res => res.json())
       .then(() => alert('✔ Component markup successfully transpiled and queued for Figma canvas!'))
       .catch(err => alert('Sync error: ' + err.message));
+    }
+
+    function deployComponent(toolName, args) {
+      fetch('/mcp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jsonrpc: '2.0',
+          id: Date.now(),
+          method: 'tools/call',
+          params: {
+            name: toolName,
+            arguments: args
+          }
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert('✔ ' + toolName + ' successfully dispatched to Figma canvas!');
+      })
+      .catch(err => alert('Deployment error: ' + err.message));
     }
   </script>
 </body>
