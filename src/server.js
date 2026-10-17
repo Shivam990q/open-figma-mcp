@@ -677,5 +677,11 @@ if (mode === 'stdio') {
   bridge.start(server);
   server.listen(port, () => {
     process.stderr.write(`[open-figma-mcp] HTTP & WebSocket bridge listening on http://127.0.0.1:${port}\n`);
+    if (args.includes('--open') || mode === 'studio' || mode === 'preview') {
+      const openCmd = process.platform === 'win32' ? 'start' : process.platform === 'darwin' ? 'open' : 'xdg-open';
+      import('node:child_process').then(({ exec }) => {
+        exec(`${openCmd} http://127.0.0.1:${port}/preview`);
+      });
+    }
   });
 }
