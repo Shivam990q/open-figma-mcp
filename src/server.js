@@ -59,7 +59,8 @@ if (mode === 'fetch') {
     console.error('Usage: open-figma fetch <URL_OR_KEY> [--format=yaml|json]');
     process.exit(1);
   }
-  const format = args.some((a) => a.includes('json')) ? 'json' : 'yaml';
+  const formatArg = args.find((a) => a.startsWith('--format='))?.split('=')[1];
+  const format = formatArg === 'json' ? 'json' : 'yaml';
   const data = await fetchFigmaData(target, apiKey, { format });
   console.log(data);
   process.exit(0);

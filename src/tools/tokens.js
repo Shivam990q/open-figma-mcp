@@ -3,9 +3,9 @@
  */
 
 export function exportTokens(symbolTable, format = 'tailwind-v4') {
-  const colors = symbolTable.colorDefs || {};
-  const radii = symbolTable.radiusDefs || {};
-  const shadows = symbolTable.shadowDefs || {};
+  const colors = symbolTable.colorDefs || symbolTable.colors || {};
+  const radii = symbolTable.radiusDefs || symbolTable.radii || {};
+  const shadows = symbolTable.shadowDefs || symbolTable.shadows || {};
 
   switch (format) {
     case 'css':
@@ -20,6 +20,7 @@ export function exportTokens(symbolTable, format = 'tailwind-v4') {
     case 'style-dictionary':
       return exportW3c(colors, radii, shadows);
     case 'typescript':
+    case 'ts':
       return exportTypescript(colors, radii);
     case 'flutter':
       return exportFlutter(colors);
@@ -37,7 +38,8 @@ function exportCss(colors, radii, shadows) {
   out += '\n  /* Radii */\n';
   for (const [sym, r] of Object.entries(radii)) {
     const name = sym.toLowerCase().replace('$', '');
-    out += `  --radius-${name}: ${r}px;\n`;
+    const radiusVal = typeof r === 'number' ? `${r}px` : r;
+    out += `  --radius-${name}: ${radiusVal};\n`;
   }
   out += '}\n';
   return out;
@@ -51,7 +53,8 @@ function exportScss(colors, radii) {
   }
   for (const [sym, r] of Object.entries(radii)) {
     const name = sym.toLowerCase().replace('$', '');
-    out += `$radius-${name}: ${r}px;\n`;
+    const radiusVal = typeof r === 'number' ? `${r}px` : r;
+    out += `$radius-${name}: ${radiusVal};\n`;
   }
   return out;
 }
@@ -64,7 +67,8 @@ function exportTailwindV4(colors, radii) {
   }
   for (const [sym, r] of Object.entries(radii)) {
     const name = sym.toLowerCase().replace('$', '');
-    out += `  --radius-${name}: ${r}px;\n`;
+    const radiusVal = typeof r === 'number' ? `${r}px` : r;
+    out += `  --radius-${name}: ${radiusVal};\n`;
   }
   out += '}\n';
   return out;
@@ -87,7 +91,8 @@ function exportW3c(colors, radii) {
   }
   for (const [sym, r] of Object.entries(radii)) {
     const name = sym.toLowerCase().replace('$', '');
-    root.borderRadius[name] = { $value: `${r}px`, $type: 'dimension' };
+    const radiusVal = typeof r === 'number' ? `${r}px` : r;
+    root.borderRadius[name] = { $value: radiusVal, $type: 'dimension' };
   }
   return JSON.stringify(root, null, 2);
 }
@@ -101,7 +106,8 @@ function exportTypescript(colors, radii) {
   out += '  },\n  radii: {\n';
   for (const [sym, r] of Object.entries(radii)) {
     const name = sym.toLowerCase().replace('$', '');
-    out += `    '${name}': ${r},\n`;
+    const radiusVal = typeof r === 'number' ? `${r}px` : `'${r}'`;
+    out += `    '${name}': ${radiusVal},\n`;
   }
   out += '  },\n} as const;\n';
   return out;

@@ -13,7 +13,8 @@ const SUSPICIOUS_PATTERNS = [
   /eval\s*\(/i,
   /document\.cookie/i,
   /window\.location/i,
-  /curl\s+-/i,
+  /curl\s+/i,
+  /wget\s+/i,
   /rm\s+-rf/i,
   /drop\s+table/i,
 ];

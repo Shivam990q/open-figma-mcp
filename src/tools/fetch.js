@@ -3,6 +3,7 @@
  */
 
 import YAML from 'yaml';
+import fs from 'node:fs';
 
 export function parseFigmaUrl(urlOrKey) {
   if (!urlOrKey.startsWith('http://') && !urlOrKey.startsWith('https://')) {
@@ -151,6 +152,38 @@ export class ScenegraphReducer {
 }
 
 export async function fetchFigmaData(urlOrKey, apiKey, options = {}) {
+  // Check if target is a local file on disk
+  if (typeof urlOrKey === 'string' && fs.existsSync(urlOrKey)) {
+    const rawContent = await fs.promises.readFile(urlOrKey, 'utf8');
+    const json = JSON.parse(rawContent);
+
+    // If it is already a pre-reduced CSM schema with globalVars and document
+    if (json.globalVars && json.document) {
+      if (options.format === 'json') {
+        return JSON.stringify(json, null, 2);
+      }
+      return YAML.stringify(json);
+    }
+
+    const rawRoot = json.document || json.nodes?.[Object.keys(json.nodes || {})[0]]?.document || json;
+    const reducer = new ScenegraphReducer(options);
+    const document = reducer.reduceNode(rawRoot);
+
+    const result = {
+      document,
+      globalVars: {
+        colors: reducer.symbolTable.colorDefs,
+        radii: reducer.symbolTable.radiusDefs,
+        shadows: reducer.symbolTable.shadowDefs,
+      },
+    };
+
+    if (options.format === 'json') {
+      return JSON.stringify(result, null, 2);
+    }
+    return YAML.stringify(result);
+  }
+
   const { fileKey, nodeId } = parseFigmaUrl(urlOrKey);
   const endpoint = nodeId
     ? `https://api.figma.com/v1/files/${fileKey}/nodes?ids=${encodeURIComponent(nodeId)}`
