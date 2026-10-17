@@ -52,10 +52,10 @@ cargo build --release
 ### Option 2: One-Command NPX / Node
 ```bash
 # Zero-install stdio mode
-npx -y open-figma-mcp --stdio --figma-api-key figd_YOUR_TOKEN
+npx -y openfigma-mcp --stdio --figma-api-key figd_YOUR_TOKEN
 
 # HTTP / SSE server
-npx -y open-figma-mcp --port 3845 --figma-api-key figd_YOUR_TOKEN
+npx -y openfigma-mcp --port 3845 --figma-api-key figd_YOUR_TOKEN
 ```
 
 ### Option 3: Genuine Native Electron Desktop Workbench

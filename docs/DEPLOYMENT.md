@@ -13,8 +13,23 @@ Add the server definition to your `mcp.json` (or `.cursor/mcp.json`):
 {
   "mcpServers": {
     "open-figma": {
+      "command": "npx",
+      "args": ["-y", "openfigma-mcp", "--stdio"],
+      "env": {
+        "FIGMA_API_KEY": "figd_YOUR_PERSONAL_ACCESS_TOKEN"
+      }
+    }
+  }
+}
+```
+
+Or when running from a cloned local repository:
+```json
+{
+  "mcpServers": {
+    "open-figma": {
       "command": "node",
-      "args": ["C:/Users/Rose/.gemini/antigravity-ide/scratch/open-figma-mcp/bin/open-figma.js", "--stdio"],
+      "args": ["./bin/open-figma.js", "--stdio"],
       "env": {
         "FIGMA_API_KEY": "figd_YOUR_PERSONAL_ACCESS_TOKEN"
       }
@@ -24,13 +39,13 @@ Add the server definition to your `mcp.json` (or `.cursor/mcp.json`):
 ```
 
 ### Claude Desktop Configuration
-In `%APPDATA%/Claude/claude_desktop_config.json`:
+In `%APPDATA%/Claude/claude_desktop_config.json` (Windows) or `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
 ```json
 {
   "mcpServers": {
     "open-figma": {
-      "command": "C:/Users/Rose/.gemini/antigravity-ide/scratch/open-figma-mcp/target/release/open-figma.exe",
-      "args": ["--stdio"],
+      "command": "npx",
+      "args": ["-y", "openfigma-mcp", "--stdio"],
       "env": {
         "FIGMA_API_KEY": "figd_YOUR_PERSONAL_ACCESS_TOKEN"
       }
