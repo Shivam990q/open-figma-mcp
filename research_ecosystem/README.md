@@ -60,7 +60,8 @@ research_ecosystem/
 │   ├── official-figma-mcp.json        # Official 19 cloud tools configuration (mcp.figma.com)
 │   └── official-figma-gemini-extension.json # Official Gemini extension bundle config
 │
-└── comparative_deep_audit/            # 11 Forensic Source-Level Audit Reports
+└── comparative_deep_audit/            # 12 Forensic Source-Level Audit Documents
+    ├── 00_THE_DEFINITIVE_MASTER_COMPARISON_DOSSIER.md # The Complete 17-Tool Comparative Audit Matrix
     ├── audit_GLips_figma_context_mcp.md
     ├── audit_southleft_figma_console_mcp.md
     ├── audit_tathagat22_plumb_mcp.md
