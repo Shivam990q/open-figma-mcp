@@ -21,6 +21,9 @@ import { CanvasController } from './tools/canvas.js';
 import { verifyFigmaWebhookSignature, processFigmaWebhook } from './tools/webhook.js';
 import { metrics } from './tools/metrics.js';
 import { generateClientConfigs } from './tools/client-config.js';
+import { OmniRouter } from './tools/omni-router.js';
+import { generatePreviewHtml } from './preview/preview.js';
+import { checkpointKernel } from './tools/workspace-checkpoints.js';
 
 // Parse arguments
 const args = process.argv.slice(2);
@@ -51,6 +54,7 @@ for (let i = 0; i < args.length; i++) {
 
 const bridge = new FigmaPluginBridge(port);
 const canvas = new CanvasController(bridge);
+const omniRouter = new OmniRouter();
 
 // Handle CLI subcommands
 if (mode === 'fetch') {
@@ -283,6 +287,54 @@ const TOOLS = [
       properties: {},
     },
   },
+  {
+    name: 'ai_omni_route',
+    description: 'Dispatches a design prompt through the multi-provider 3-tier fallback router (Claude, OpenAI, Gemini, DeepSeek, Groq, Ollama) with RTK token compression.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        prompt: { type: 'string', description: 'Design or codegen prompt' },
+        preferredModel: { type: 'string', description: 'Preferred model name to attempt first' },
+      },
+      required: ['prompt'],
+    },
+  },
+  {
+    name: 'design_checkpoint_create',
+    description: 'Creates an immutable LayerFS checkpoint of current design state to enable instant rollback if AI modifications fail.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        url: { type: 'string', description: 'Figma file URL or local fixture path' },
+        checkpointId: { type: 'string', description: 'Optional unique snapshot ID' },
+        description: { type: 'string', description: 'Snapshot description' },
+      },
+      required: ['url'],
+    },
+  },
+  {
+    name: 'design_checkpoint_rollback',
+    description: 'Restores an earlier design checkpoint state in < 15ms.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        checkpointId: { type: 'string', description: 'Snapshot ID to restore' },
+      },
+      required: ['checkpointId'],
+    },
+  },
+  {
+    name: 'design_checkpoint_diff',
+    description: 'Computes structural AST diff between two design checkpoints (added, modified, removed nodes).',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        baseCheckpointId: { type: 'string', description: 'Base snapshot ID' },
+        targetCheckpointId: { type: 'string', description: 'Target snapshot ID' },
+      },
+      required: ['baseCheckpointId', 'targetCheckpointId'],
+    },
+  },
 ];
 
 async function handleToolCall(name, args, reqApiKey) {
@@ -303,6 +355,9 @@ async function handleToolCall(name, args, reqApiKey) {
       apcaAudit: true,
       dlpSecretScanner: true,
       promptInjectionShield: true,
+      omniRouter: true,
+      layerFsCheckpoints: true,
+      interactiveCanvasPreview: true,
     }, null, 2);
   }
 
@@ -370,6 +425,31 @@ async function handleToolCall(name, args, reqApiKey) {
 
   if (name === 'canvas_insert_code') {
     const res = await canvas.insertCode(args.code);
+    return JSON.stringify(res, null, 2);
+  }
+
+  if (name === 'ai_omni_route') {
+    const res = await omniRouter.dispatch({
+      messages: [{ role: 'user', content: args.prompt }],
+      preferredModel: args.preferredModel,
+    });
+    return JSON.stringify(res, null, 2);
+  }
+
+  if (name === 'design_checkpoint_create') {
+    const data = await fetchFigmaData(args.url, activeKey, { format: 'json' });
+    const parsed = JSON.parse(data);
+    const res = checkpointKernel.createCheckpoint(args.checkpointId, args.description, parsed);
+    return JSON.stringify(res, null, 2);
+  }
+
+  if (name === 'design_checkpoint_rollback') {
+    const res = checkpointKernel.rollback(args.checkpointId);
+    return JSON.stringify(res, null, 2);
+  }
+
+  if (name === 'design_checkpoint_diff') {
+    const res = checkpointKernel.diffCheckpoints(args.baseCheckpointId, args.targetCheckpointId);
     return JSON.stringify(res, null, 2);
   }
 
@@ -482,6 +562,11 @@ if (mode === 'stdio') {
     if (req.url === '/readyz') {
       res.writeHead(200, { 'Content-Type': 'application/json' });
       return res.end(JSON.stringify({ status: 'ready', pluginConnected: bridge.isConnected() }));
+    }
+
+    if (req.url === '/preview' || req.url === '/dashboard') {
+      res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+      return res.end(generatePreviewHtml());
     }
 
     if (req.url === '/metrics') {
