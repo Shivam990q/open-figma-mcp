@@ -12,7 +12,7 @@ This directory (`research_ecosystem/`) constitutes an exhaustive, all-inclusive 
 
 ```
 research_ecosystem/
-├── repos/                             # 24 Full Cloned Upstream Git Repositories
+├── repos/                             # 27 Full Cloned Upstream Git Repositories
 │   ├── apca-compliance-figma/         # Merkle-XDI/apca-compliance-figma (APCA contrast tool)
 │   ├── bernaferrari-FigmaToCode/      # bernaferrari/FigmaToCode (10k stars - Tailwind/Flutter/SwiftUI)
 │   ├── builderio-figma-html/          # BuilderIO/figma-html (10k+ stars - DOM & HTML to Figma engine)
@@ -25,36 +25,42 @@ research_ecosystem/
 │   ├── figma-fig-tools/               # mikesimons/figma-fig-tools (.fig unpacker & kiwi decoders)
 │   ├── figma-mcp-server-guide/        # figma/mcp-server-guide (Official Figma MCP server guide & registry)
 │   ├── figma-plugin-samples/          # figma/plugin-samples (Official Figma Plugin API templates)
+│   ├── figma-plugin-typings/          # figma/plugin-typings (Official 1.142.0 Plugin API definitions)
 │   ├── figma-rest-api-spec/           # figma/rest-api-spec (Official OpenAPI 3.0 YAML & TS types)
 │   ├── figma-ui-mcp/                  # TranHoaiHung/figma-ui-mcp (Figma UI drawing MCP)
 │   ├── figma-widget-samples/          # figma/widget-samples (Official Figma Widget API samples)
 │   ├── figwright/                     # awdr74100/figwright (1k stars - two-way Figma MCP server)
+│   ├── gridaco-code/                  # gridaco/code (50+ pkg monorepo for AST design-to-code compiler)
 │   ├── lukasoppermann-design-tokens/  # lukasoppermann/design-tokens (Figma tokens exporter)
 │   ├── modelcontextprotocol-servers/  # modelcontextprotocol/servers (Anthropic's official MCP server catalog)
 │   ├── noemuch-bridge/                # noemuch/bridge (WebSocket Figma Plugin to terminal bridge)
 │   ├── open-pencil/                   # open-pencil/open-pencil (Rust + Tauri AI design editor with .fig engine)
 │   ├── plumb-mcp/                     # tathagat22/plumb-mcp (Local rate-limit-free server & bench)
+│   ├── redmadrobot-figma-export/      # RedMadRobot/figma-export (Native Swift CLI exporter for iOS & Android)
 │   ├── style-dictionary/              # style-dictionary/style-dictionary (Amazon's Style Dictionary engine)
 │   ├── taffy-layout-engine/           # DioxusLabs/taffy (Pure Rust Flexbox & CSS Grid solver)
 │   └── tokens-studio-sd-transforms/   # tokens-studio/sd-transforms (Design tokens transformer)
 │
-├── articles_and_scrapes/              # 6 Forensic Deep-Dive Engineering Articles
+├── articles_and_scrapes/              # 8 Forensic Deep-Dive Engineering Articles
 │   ├── 01_figma_binary_kiwi_wire_protocol_teardown.md
 │   ├── 02_official_figma_mcp_vs_open_source_deep_dive.md
 │   ├── 03_figma_code_connect_internals_and_open_alternative.md
 │   ├── 04_layout_solvers_benchmarks_taffy_vs_yoga_vs_figma.md
 │   ├── 05_design_to_code_ast_and_canvas_mutation_paradigms.md
-│   └── 06_apca_contrast_math_and_design_security_dlp_audit.md
+│   ├── 06_apca_contrast_math_and_design_security_dlp_audit.md
+│   ├── 07_figma_desktop_electron_cdp_and_local_wire_sniffing.md
+│   └── 08_multiplayer_crdt_vs_ot_and_scenegraph_immutability.md
 │
 ├── schemas_and_specs/                 # Authoritative Industry Schemas & Type Specs
 │   ├── figma-openapi.yaml             # Official 414 KB OpenAPI 3.0 specification for Figma REST API
 │   ├── figma-api-types.ts             # Official 195 KB TypeScript type definitions for all Figma nodes
 │   ├── figma-kiwi-types.d.ts          # Complete 141 KB / 3,529 lines decompiled Kiwi binary schema types
 │   ├── code-connect-types.d.ts        # Official Figma Code Connect template type definitions
+│   ├── figma-plugin-api.d.ts          # Official 518 KB Figma Plugin API definitions
 │   ├── official-figma-mcp.json        # Official 19 cloud tools configuration (mcp.figma.com)
 │   └── official-figma-gemini-extension.json # Official Gemini extension bundle config
 │
-└── comparative_deep_audit/            # 9 Forensic Source-Level Audit Reports
+└── comparative_deep_audit/            # 11 Forensic Source-Level Audit Reports
     ├── audit_GLips_figma_context_mcp.md
     ├── audit_southleft_figma_console_mcp.md
     ├── audit_tathagat22_plumb_mcp.md
@@ -63,7 +69,9 @@ research_ecosystem/
     ├── audit_bernaferrari_figma_to_code.md
     ├── audit_open_pencil.md
     ├── audit_figwright.md
-    └── audit_figma_official_mcp_server_guide.md
+    ├── audit_figma_official_mcp_server_guide.md
+    ├── audit_gridaco_code.md
+    └── audit_redmadrobot_figma_export.md
 ```
 
 ---
