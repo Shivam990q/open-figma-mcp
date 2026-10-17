@@ -1,12 +1,30 @@
 {
-  "name": "open-figma-mcp",
+  "name": "openfigma-mcp",
   "version": "2.0.0",
   "description": "High-performance enterprise Model Context Protocol (MCP) server & design engine for Figma",
   "main": "src/server.js",
   "bin": {
     "open-figma": "bin/open-figma.js",
-    "open-figma-mcp": "bin/open-figma.js"
+    "open-figma-mcp": "bin/open-figma.js",
+    "openfigma": "bin/open-figma.js",
+    "openfigma-mcp": "bin/open-figma.js"
   },
+  "files": [
+    "bin",
+    "src",
+    "desktop",
+    "figma-plugin",
+    "README.md",
+    "LICENSE"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shivam990q/open-figma-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Shivam990q/open-figma-mcp/issues"
+  },
+  "homepage": "https://github.com/Shivam990q/open-figma-mcp#readme",
   "type": "module",
   "scripts": {
     "start": "node src/server.js",

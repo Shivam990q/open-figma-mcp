@@ -1,0 +1,41 @@
+name: 📦 Publish to npm
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+jobs:
+  publish:
+    name: 🚀 Publish openfigma-mcp to npm registry
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: 🛎️ Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: 📦 Install Dependencies
+        run: npm ci || npm install
+
+      - name: 🧪 Run Automated Tests
+        run: npm test
+
+      - name: 🚀 Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then
+            echo "⚠️ Warning: NPM_TOKEN secret is not configured in repository secrets."
+            echo "To publish, create an npm granular access token for 'openfigma-mcp' and add it as NPM_TOKEN in repo settings -> secrets -> Actions."
+            exit 1
+          fi
+          npm publish --access public
