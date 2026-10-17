@@ -24,6 +24,7 @@ RUN npm install --production
 COPY --from=rust-builder /app/target/release/open-figma /usr/local/bin/open-figma
 COPY bin ./bin
 COPY src ./src
+COPY desktop ./desktop
 COPY figma-plugin ./figma-plugin
 COPY README.md ARCHITECTURE.md ./
 

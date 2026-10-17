@@ -1,0 +1,53 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OpenFigmaCodeConnectSchema",
+  "description": "JSON Schema specification for OpenFigma Open Code Connect component mappings",
+  "type": "object",
+  "required": ["name", "version", "mappings"],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Design system or component library name"
+    },
+    "version": {
+      "type": "string",
+      "description": "Semantic version of the code connect mapping configuration"
+    },
+    "mappings": {
+      "type": "array",
+      "description": "List of component connection mappings from Figma layers to code",
+      "items": {
+        "type": "object",
+        "required": ["target", "importPath", "componentName"],
+        "properties": {
+          "target": {
+            "type": "string",
+            "description": "Figma component or layer name pattern to match"
+          },
+          "importPath": {
+            "type": "string",
+            "description": "Module import path for the production component"
+          },
+          "componentName": {
+            "type": "string",
+            "description": "Exported component identifier in code"
+          },
+          "propsMapping": {
+            "type": "object",
+            "description": "Key-value mapping of Figma component variant properties to code props",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "template": {
+            "type": "string",
+            "description": "JSX or HTML template syntax with {{variable}} placeholders"
+          }
+        }
+      }
+    }
+  }
+}
