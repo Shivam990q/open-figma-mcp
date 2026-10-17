@@ -16,7 +16,8 @@
     "test:sdk:ts": "node --test sdk/typescript/test/*.test.js",
     "test:all": "node --test tests/*.test.js && node --test sdk/typescript/test/*.test.js && cargo test --workspace",
     "test:token": "node tests/test_live_figma_token.js",
-    "studio": "node src/server.js --open"
+    "studio": "node src/server.js --open",
+    "desktop": "node desktop/launch.js"
   },
   "keywords": [
     "mcp",

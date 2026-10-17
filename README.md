@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/license-MIT-green" alt="license">
   <img src="https://img.shields.io/badge/engine-Rust%20SIMD%20%2B%20Kiwi%20%2B%20Taffy-orange" alt="Rust Engine">
   <img src="https://img.shields.io/badge/MCP-compatible-0a7cff" alt="MCP compatible">
-  <img src="https://img.shields.io/badge/tests-50%20passing%20(Rust%20%2B%20Node%20%2B%20Python%20%2B%20TS)-success" alt="tests">
+  <img src="https://img.shields.io/badge/tests-92%20passing%20(Rust%20%2B%20Node%20%2B%20Python%20%2B%20TS)-success" alt="tests">
   <img src="https://img.shields.io/badge/observability-Prometheus%20%2B%20OTel-blueviolet" alt="observability">
 </p>
 
@@ -56,6 +56,12 @@ npx -y open-figma-mcp --stdio --figma-api-key figd_YOUR_TOKEN
 
 # HTTP / SSE server
 npx -y open-figma-mcp --port 3845 --figma-api-key figd_YOUR_TOKEN
+```
+
+### Option 3: Native Desktop GUI App (Zero-Electron Overhead)
+```bash
+# Launches dedicated standalone desktop application window with live canvas & companion bridge
+npm run desktop
 ```
 
 ---
