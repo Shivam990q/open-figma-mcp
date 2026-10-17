@@ -280,6 +280,45 @@ const TOOLS = [
     },
   },
   {
+    name: 'canvas_create_navbar',
+    description: 'Generates a modern responsive navigation bar with logo, navigation links, and CTA button directly on the Figma canvas.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        brandName: { type: 'string' },
+        links: { type: 'array', items: { type: 'string' } },
+        ctaText: { type: 'string' },
+        theme: { type: 'string', enum: ['light', 'dark'] },
+      },
+    },
+  },
+  {
+    name: 'canvas_create_hero_section',
+    description: 'Generates a high-impact marketing hero section with badge pill, title, subtitle, and CTA buttons directly on the Figma canvas.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string' },
+        subtitle: { type: 'string' },
+        badge: { type: 'string' },
+        primaryCta: { type: 'string' },
+        secondaryCta: { type: 'string' },
+        theme: { type: 'string', enum: ['light', 'dark'] },
+      },
+    },
+  },
+  {
+    name: 'canvas_create_design_system_scaffold',
+    description: 'Builds a complete design system artboard in Figma with title banner and 7 token color swatch cards.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        brandName: { type: 'string' },
+        primaryColor: { type: 'string', description: 'Hex color code e.g. #3B82F6' },
+      },
+    },
+  },
+  {
     name: 'capabilities',
     description: 'Returns active server capabilities, runtime mode, and companion plugin bridge status.',
     inputSchema: {
@@ -425,6 +464,21 @@ async function handleToolCall(name, args, reqApiKey) {
 
   if (name === 'canvas_insert_code') {
     const res = await canvas.insertCode(args.code);
+    return JSON.stringify(res, null, 2);
+  }
+
+  if (name === 'canvas_create_navbar') {
+    const res = await canvas.createNavbar(args);
+    return JSON.stringify(res, null, 2);
+  }
+
+  if (name === 'canvas_create_hero_section') {
+    const res = await canvas.createHeroSection(args);
+    return JSON.stringify(res, null, 2);
+  }
+
+  if (name === 'canvas_create_design_system_scaffold') {
+    const res = await canvas.createDesignSystemScaffold(args);
     return JSON.stringify(res, null, 2);
   }
 

@@ -90,6 +90,11 @@
       ws.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
+          // Handle liveness heartbeat ping
+          if (data.type === 'PING') {
+            ws.send(JSON.stringify({ type: 'PONG', timestamp: Date.now() }));
+            return;
+          }
           // Relay message to Figma plugin sandbox
           parent.postMessage({ pluginMessage: data }, '*');
         } catch (e) {

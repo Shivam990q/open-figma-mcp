@@ -1,5 +1,42 @@
 // OpenFigma Companion Plugin Canvas Controller v2.0
-figma.showUI(__html__, { width: 320, height: 280, themeColors: true });
+figma.showUI(__html__, { width: 340, height: 320, themeColors: true });
+
+function normalizeColor(c) {
+  if (!c) return { r: 0.2, g: 0.5, b: 0.96 };
+  if (typeof c === 'string' && c.startsWith('#')) {
+    const hex = c.replace('#', '');
+    const num = parseInt(hex.length === 3 ? hex.split('').map((x) => x + x).join('') : hex, 16);
+    return {
+      r: ((num >> 16) & 255) / 255,
+      g: ((num >> 8) & 255) / 255,
+      b: (num & 255) / 255,
+    };
+  }
+  if (typeof c === 'object' && c.r !== undefined) {
+    return {
+      r: c.r > 1 ? c.r / 255 : c.r,
+      g: c.g > 1 ? c.g / 255 : c.g,
+      b: c.b > 1 ? c.b / 255 : c.b,
+    };
+  }
+  return { r: 0.2, g: 0.5, b: 0.96 };
+}
+
+async function safeLoadFont(family = 'Inter', weight = 400) {
+  const style = weight >= 700 ? 'Bold' : weight >= 600 ? 'Semi Bold' : weight >= 500 ? 'Medium' : 'Regular';
+  try {
+    await figma.loadFontAsync({ family, style });
+    return { family, style };
+  } catch (_) {
+    try {
+      await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
+      return { family: 'Inter', style: 'Regular' };
+    } catch (e) {
+      console.warn('Font load fallback failed', e);
+      return { family: 'Inter', style: 'Regular' };
+    }
+  }
+}
 
 figma.ui.onmessage = async (msg) => {
   const { id, command, payload } = msg;
@@ -22,7 +59,7 @@ figma.ui.onmessage = async (msg) => {
         }
 
         if (payload.fillColor) {
-          const c = payload.fillColor;
+          const c = normalizeColor(payload.fillColor);
           frame.fills = [{ type: 'SOLID', color: { r: c.r, g: c.g, b: c.b } }];
         }
 
@@ -44,7 +81,7 @@ figma.ui.onmessage = async (msg) => {
         }
 
         if (payload.fillColor) {
-          const c = payload.fillColor;
+          const c = normalizeColor(payload.fillColor);
           rect.fills = [{ type: 'SOLID', color: { r: c.r, g: c.g, b: c.b } }];
         }
 
@@ -57,13 +94,14 @@ figma.ui.onmessage = async (msg) => {
       }
 
       case 'CREATE_TEXT': {
-        await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
+        const fontName = await safeLoadFont('Inter', payload.fontWeight || 400);
         const textNode = figma.createText();
+        textNode.fontName = fontName;
         textNode.characters = payload.text || 'Hello from AI';
         textNode.fontSize = payload.fontSize || 16;
 
         if (payload.fillColor) {
-          const c = payload.fillColor;
+          const c = normalizeColor(payload.fillColor);
           textNode.fills = [{ type: 'SOLID', color: { r: c.r, g: c.g, b: c.b } }];
         }
 
@@ -103,15 +141,21 @@ figma.ui.onmessage = async (msg) => {
       }
 
       case 'BATCH_CREATE': {
-        await figma.loadFontAsync({ family: 'Inter', style: 'Regular' });
         const createdNodes = [];
 
         async function instantiateNode(spec, parent) {
           let node;
           if (spec.type === 'TEXT') {
+            const fontName = await safeLoadFont('Inter', spec.style?.fontWeight || 400);
             node = figma.createText();
+            node.fontName = fontName;
             node.characters = spec.characters || 'Text';
             node.fontSize = spec.style?.fontSize || 16;
+
+            if (spec.fills && spec.fills.length > 0 && spec.fills[0].color) {
+              const c = normalizeColor(spec.fills[0].color);
+              node.fills = [{ type: 'SOLID', color: { r: c.r, g: c.g, b: c.b } }];
+            }
           } else {
             node = figma.createFrame();
             node.name = spec.name || 'Frame';
@@ -132,7 +176,7 @@ figma.ui.onmessage = async (msg) => {
             if (spec.itemSpacing) node.itemSpacing = spec.itemSpacing;
 
             if (spec.fills && spec.fills.length > 0 && spec.fills[0].color) {
-              const c = spec.fills[0].color;
+              const c = normalizeColor(spec.fills[0].color);
               node.fills = [{ type: 'SOLID', color: { r: c.r, g: c.g, b: c.b } }];
             }
 
