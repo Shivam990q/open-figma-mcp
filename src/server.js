@@ -18,6 +18,9 @@ import { transpileCodeToNodes } from './tools/transpiler.js';
 import { scanDlpLeaks } from './tools/dlp.js';
 import { FigmaPluginBridge } from './bridge.js';
 import { CanvasController } from './tools/canvas.js';
+import { verifyFigmaWebhookSignature, processFigmaWebhook } from './tools/webhook.js';
+import { metrics } from './tools/metrics.js';
+import { generateClientConfigs } from './tools/client-config.js';
 
 // Parse arguments
 const args = process.argv.slice(2);
@@ -41,7 +44,7 @@ for (let i = 0; i < args.length; i++) {
     apiKey = args[++i];
   } else if (arg.startsWith('--figma-api-key=')) {
     apiKey = arg.split('=')[1];
-  } else if (['fetch', 'tokens', 'codegen', 'audit', 'svg', 'connect', 'transpile'].includes(arg)) {
+  } else if (['fetch', 'tokens', 'codegen', 'audit', 'svg', 'connect', 'transpile', 'configure'].includes(arg)) {
     mode = arg;
   }
 }
@@ -125,6 +128,14 @@ if (mode === 'audit') {
   console.log(`Leaked Secrets (DLP): ${dlpFindings.length}`);
   if (promptFindings.length > 0) console.log('Prompt Findings:', promptFindings);
   if (dlpFindings.length > 0) console.log('DLP Findings:', dlpFindings);
+  process.exit(0);
+}
+
+if (mode === 'configure') {
+  const target = args.find((a) => !a.startsWith('--') && a !== 'configure') || 'claude';
+  const configs = generateClientConfigs({ apiKey });
+  const selected = configs[target] || configs.claudeDesktop;
+  console.log(JSON.stringify(selected, null, 2));
   process.exit(0);
 }
 
@@ -274,6 +285,7 @@ const TOOLS = [
 ];
 
 async function handleToolCall(name, args, reqApiKey) {
+  metrics.recordRequest(name);
   const activeKey = reqApiKey || apiKey;
 
   if (name === 'capabilities') {
@@ -411,6 +423,7 @@ async function handleMcpMessage(msg, reqApiKey) {
       };
     } catch (e) {
       errorCount++;
+      metrics.recordError(toolName);
       return {
         jsonrpc: '2.0',
         id,
@@ -472,9 +485,31 @@ if (mode === 'stdio') {
 
     if (req.url === '/metrics') {
       res.writeHead(200, { 'Content-Type': 'text/plain; version=0.0.4' });
-      return res.end(
-        `# HELP open_figma_requests_total Total number of MCP requests\n# TYPE open_figma_requests_total counter\nopen_figma_requests_total ${requestCount}\n# HELP open_figma_errors_total Total number of failed MCP requests\n# TYPE open_figma_errors_total counter\nopen_figma_errors_total ${errorCount}\n`
-      );
+      return res.end(metrics.toPrometheus(bridge.isConnected() ? 1 : 0));
+    }
+
+    if (req.method === 'POST' && req.url === '/webhook/figma') {
+      const signature = req.headers['x-figma-signature'] || req.headers['x-figma-signature-256'] || '';
+      const secret = process.env.FIGMA_WEBHOOK_PASSCODE || process.env.FIGMA_WEBHOOK_SECRET || '';
+      let body = '';
+      req.on('data', (chunk) => { body += chunk; });
+      req.on('end', () => {
+        if (secret && !verifyFigmaWebhookSignature(body, signature, secret)) {
+          res.writeHead(401, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ error: 'Invalid HMAC signature' }));
+        }
+        try {
+          const event = JSON.parse(body);
+          const result = processFigmaWebhook(event);
+          metrics.recordWebhook(result.eventType);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify(result));
+        } catch (e) {
+          res.writeHead(400, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: `Malformed webhook body: ${e.message}` }));
+        }
+      });
+      return;
     }
 
     if (req.method === 'POST' && req.url === '/mcp') {

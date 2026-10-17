@@ -1,0 +1,122 @@
+{
+  "name": "Enterprise Design System Core",
+  "lastModified": "2026-10-17T05:30:00Z",
+  "version": "2.4.0",
+  "globalVars": {
+    "colors": {
+      "primary": "#2563EB",
+      "primaryHover": "#1D4ED8",
+      "secondary": "#475569",
+      "background": "#FFFFFF",
+      "surface": "#F8FAFC",
+      "textMain": "#0F172A",
+      "textMuted": "#64748B",
+      "success": "#16A34A",
+      "error": "#DC2626",
+      "border": "#E2E8F0"
+    },
+    "radii": {
+      "sm": "4px",
+      "md": "8px",
+      "lg": "12px",
+      "full": "9999px"
+    },
+    "spacing": {
+      "xs": "4px",
+      "sm": "8px",
+      "md": "16px",
+      "lg": "24px",
+      "xl": "32px"
+    },
+    "typography": {
+      "fontFamily": "Inter, -apple-system, sans-serif",
+      "heading1": "bold 32px/40px",
+      "heading2": "semibold 24px/32px",
+      "body": "normal 16px/24px",
+      "label": "medium 14px/20px"
+    }
+  },
+  "document": {
+    "id": "0:0",
+    "name": "Document",
+    "type": "DOCUMENT",
+    "children": [
+      {
+        "id": "1:0",
+        "name": "Component Library Canvas",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "10:1",
+            "name": "Button / Primary",
+            "type": "FRAME",
+            "visible": true,
+            "layoutMode": "HORIZONTAL",
+            "primaryAxisAlignItems": "CENTER",
+            "counterAxisAlignItems": "CENTER",
+            "paddingLeft": 16,
+            "paddingRight": 16,
+            "paddingTop": 10,
+            "paddingBottom": 10,
+            "itemSpacing": 8,
+            "cornerRadius": 8,
+            "fills": [{ "type": "SOLID", "color": { "r": 0.145, "g": 0.388, "b": 0.922, "a": 1 } }],
+            "strokes": [],
+            "children": [
+              {
+                "id": "10:2",
+                "name": "Label",
+                "type": "TEXT",
+                "visible": true,
+                "characters": "Confirm Payment",
+                "fontSize": 14,
+                "fontWeight": 600,
+                "fills": [{ "type": "SOLID", "color": { "r": 1, "g": 1, "b": 1, "a": 1 } }]
+              }
+            ]
+          },
+          {
+            "id": "20:1",
+            "name": "Card / Analytics Metric",
+            "type": "FRAME",
+            "visible": true,
+            "layoutMode": "VERTICAL",
+            "primaryAxisAlignItems": "MIN",
+            "counterAxisAlignItems": "MIN",
+            "paddingLeft": 24,
+            "paddingRight": 24,
+            "paddingTop": 20,
+            "paddingBottom": 20,
+            "itemSpacing": 12,
+            "cornerRadius": 12,
+            "fills": [{ "type": "SOLID", "color": { "r": 1, "g": 1, "b": 1, "a": 1 } }],
+            "strokes": [{ "type": "SOLID", "color": { "r": 0.886, "g": 0.91, "b": 0.941, "a": 1 } }],
+            "strokeWeight": 1,
+            "children": [
+              {
+                "id": "20:2",
+                "name": "Metric Title",
+                "type": "TEXT",
+                "visible": true,
+                "characters": "Monthly Recurring Revenue",
+                "fontSize": 14,
+                "fontWeight": 500,
+                "fills": [{ "type": "SOLID", "color": { "r": 0.392, "g": 0.455, "b": 0.545, "a": 1 } }]
+              },
+              {
+                "id": "20:3",
+                "name": "Metric Value",
+                "type": "TEXT",
+                "visible": true,
+                "characters": "$284,500.00",
+                "fontSize": 28,
+                "fontWeight": 700,
+                "fills": [{ "type": "SOLID", "color": { "r": 0.059, "g": 0.09, "b": 0.165, "a": 1 } }]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,66 @@
+name: 🎨 Figma Design System CI/CD & Automated Token Sync
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    # Daily design drift check at 02:00 UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      figma_file_url:
+        description: 'Specific Figma File URL to audit and sync'
+        required: false
+        default: ''
+
+jobs:
+  design-audit-and-sync:
+    name: 🛡️ Audit Design Security, Contrast & Sync Tokens
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛎️ Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: ⚙️ Setup Node.js 20+
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: 🦀 Setup Rust Toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 📦 Install Dependencies
+        run: npm ci || npm install
+
+      - name: 🧪 Execute Full Test Suite
+        run: npm run test:all
+
+      - name: 🔍 Audit Enterprise Design Fixture for Contrast & DLP
+        run: |
+          node src/server.js audit tests/fixtures/enterprise_design_system.json || true
+
+      - name: 🎨 Export Updated Tailwind v4 & W3C Design Tokens
+        run: |
+          node src/server.js tokens tests/fixtures/enterprise_design_system.json --format=tailwind-v4 > design-tokens.css
+          node src/server.js tokens tests/fixtures/enterprise_design_system.json --format=w3c > tokens.json
+
+      - name: 🚀 Verify Multi-Framework Codegen Output
+        run: |
+          node src/server.js codegen tests/fixtures/enterprise_design_system.json --framework=react-tailwind > Component.jsx
+          node src/server.js codegen tests/fixtures/enterprise_design_system.json --framework=vue > Component.vue
+          node src/server.js codegen tests/fixtures/enterprise_design_system.json --framework=svelte > Component.svelte
+
+      - name: 📊 Upload Design Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-design-assets
+          path: |
+            design-tokens.css
+            tokens.json
+            Component.jsx
+            Component.vue
+            Component.svelte
